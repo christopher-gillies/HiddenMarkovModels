@@ -1,0 +1,11 @@
+Thinking about organization:
+
+hidden markov model
+
+*Components
+---states
+---symbols
+---transition matrix
+---emission probabilities per state
+---initial state probabilities (represented as state 0).
+---manhattan graph or trellis graph or lattice for Viterbi/forward-backward and Baum-Wlech algorithm 
