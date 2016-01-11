@@ -1,1 +1,1 @@
-# HiddenMarkovModels
+# Hidden Markov Models
