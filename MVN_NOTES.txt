@@ -1,3 +1,1 @@
-mvn archetype:create 
-  -DgroupId=org.kidneyomics
-  -DartifactId=hmm
+mvn archetype:create -DgroupId=org.kidneyomics -DartifactId=hmm
