@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 class Emissions {
-	final Map<Symbol,Double> symbols;
+	
+	private static final double epsilon = 0.00001;
+	private final Map<Symbol,Double> symbols;
 
 	Emissions() {
 		this.symbols = new HashMap<Symbol,Double>();
@@ -32,7 +34,7 @@ class Emissions {
 			sum += entry.getValue();
 		}
 		
-		return  Math.abs(1 - sum) <= 0.0001;
+		return  Math.abs(1 - sum) <= epsilon;
 	}
 	
 }
