@@ -2,6 +2,11 @@ package org.kidneyomics.hmm;
 
 import java.util.HashMap;
 
+/**
+ * This version will not work well with relatively high numbers of states with sparse transistions
+ * @author cgillies
+ *
+ */
 class HMM_Matrix {
 	
 	//a_kl = P(pi_{i} = l | pi_{i-1} = k)
