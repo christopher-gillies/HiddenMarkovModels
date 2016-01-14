@@ -6,9 +6,17 @@ import java.util.Map;
 class Emissions {
 	
 	private static final double epsilon = 0.00001;
+	private final RandomNumberService randomNumberService;
+	//ideally the Symbol key will point to the same symbol objects across all states
 	private final Map<Symbol,Double> symbols;
 
 	Emissions() {
+		this.randomNumberService = new DefaultRandomNumberSerivce();
+		this.symbols = new HashMap<Symbol,Double>();
+	}
+	
+	Emissions(RandomNumberService randomNumberService) {
+		this.randomNumberService = randomNumberService;
 		this.symbols = new HashMap<Symbol,Double>();
 	}
 	
@@ -35,6 +43,25 @@ class Emissions {
 		}
 		
 		return  Math.abs(1 - sum) <= epsilon;
+	}
+	
+	Symbol emit() {
+		//based on the probabilities of each symbol emit a symbol
+		double current = 0;
+		double rand = randomNumberService.getNextRandomNumber();
+		
+		Symbol ret = null;
+		//e.g. suppose rand = 0.4
+		for(Map.Entry<Symbol, Double> entry : symbols.entrySet()) {
+			double val = entry.getValue();
+			current += val;
+			if(rand <= current) {
+				ret = entry.getKey();
+				break;
+			}
+		}
+		
+		return ret;
 	}
 	
 }
