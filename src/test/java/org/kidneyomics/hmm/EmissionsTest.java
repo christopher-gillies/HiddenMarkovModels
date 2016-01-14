@@ -11,7 +11,8 @@ public class EmissionsTest {
 	
 	@Test
 	public void testEmit() {
-		Emissions e = new Emissions();
+		Emissions e = new Emissions(new DefaultRandomNumberSerivce(1l));
+		
 		Symbol s1 = new Symbol("H");
 		Symbol s2 = new Symbol("T");
 		
@@ -38,7 +39,8 @@ public class EmissionsTest {
 	
 	@Test
 	public void testEmit2() {
-		Emissions e = new Emissions();
+		Emissions e = new Emissions(new DefaultRandomNumberSerivce(1l));
+		
 		Symbol s1 = new Symbol("H");
 		Symbol s2 = new Symbol("T");
 		Symbol s3 = new Symbol("O");

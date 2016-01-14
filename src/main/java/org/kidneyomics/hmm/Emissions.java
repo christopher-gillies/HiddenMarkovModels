@@ -45,23 +45,8 @@ class Emissions {
 		return  Math.abs(1 - sum) <= epsilon;
 	}
 	
-	Symbol emit() {
-		//based on the probabilities of each symbol emit a symbol
-		double current = 0;
-		double rand = randomNumberService.getNextRandomNumber();
-		
-		Symbol ret = null;
-		//e.g. suppose rand = 0.4
-		for(Map.Entry<Symbol, Double> entry : symbols.entrySet()) {
-			double val = entry.getValue();
-			current += val;
-			if(rand <= current) {
-				ret = entry.getKey();
-				break;
-			}
-		}
-		
-		return ret;
+	Symbol emit() {	
+		return randomNumberService.emit(symbols);
 	}
 	
 }
