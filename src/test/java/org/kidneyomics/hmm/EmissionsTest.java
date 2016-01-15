@@ -13,11 +13,11 @@ public class EmissionsTest {
 	public void testEmit() {
 		Emissions e = new Emissions(new DefaultRandomNumberSerivce(1l));
 		
-		Symbol s1 = new Symbol("H");
-		Symbol s2 = new Symbol("T");
+		Symbol s1 = Symbol.createSymbol("H");
+		Symbol s2 = Symbol.createSymbol("T");
 		
-		e.addSymbol(s1, 0.2);
-		e.addSymbol(s2, 0.8);
+		e.setProbability(s1, 0.2);
+		e.setProbability(s2, 0.8);
 		
 		assertTrue(e.isValid());
 		
@@ -41,13 +41,13 @@ public class EmissionsTest {
 	public void testEmit2() {
 		Emissions e = new Emissions(new DefaultRandomNumberSerivce(1l));
 		
-		Symbol s1 = new Symbol("H");
-		Symbol s2 = new Symbol("T");
-		Symbol s3 = new Symbol("O");
+		Symbol s1 = Symbol.createSymbol("H");
+		Symbol s2 = Symbol.createSymbol("T");
+		Symbol s3 = Symbol.createSymbol("O");
 		
-		e.addSymbol(s1, 0.3);
-		e.addSymbol(s2, 0.3);
-		e.addSymbol(s3, 0.4);
+		e.setProbability(s1, 0.3);
+		e.setProbability(s2, 0.3);
+		e.setProbability(s3, 0.4);
 		
 		assertTrue(e.isValid());
 		

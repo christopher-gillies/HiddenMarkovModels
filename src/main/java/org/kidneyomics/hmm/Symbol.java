@@ -1,11 +1,20 @@
 package org.kidneyomics.hmm;
 
-class Symbol {
+public class Symbol {
 	
-	final String symbol;
+	private final String symbol;
 	
-	Symbol(String symbol) {
+	private Symbol(String symbol) {
 		this.symbol = symbol;
+	}
+	
+	public static Symbol createSymbol(String symbol) {
+		return new Symbol(symbol);
+	}
+	
+	@Override
+	public String toString() {
+		return this.symbol;
 	}
 	
 }

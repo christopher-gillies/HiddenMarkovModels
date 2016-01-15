@@ -1,26 +1,14 @@
 package org.kidneyomics.hmm;
 
-import java.util.HashMap;
-import java.util.Map;
 
-class Transistions {
-	
-	//ideally the state objects will be pointers to the other states in the model
-	private final Map<State,Double> probs;
+class Transistions extends AbstractProbabilityMap<State> {
 	
 	Transistions() {
-		this.probs = new HashMap<State,Double>();
+		super();
 	}
 	
-	
-	double getProbability(State s) {
-		if(!this.probs.containsKey(s)) {
-			throw new IllegalArgumentException("State " + s + " not found");
-		}
-		return this.probs.get(s);
+	Transistions(RandomNumberService service) {
+		super(service);
 	}
 	
-	void setProbability(State s, double value) {
-		this.probs.put(s, value);
-	}
 }
