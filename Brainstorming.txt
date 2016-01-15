@@ -9,3 +9,7 @@ hidden markov model
 ---emission probabilities per state
 ---initial state probabilities (represented as state 0).
 ---manhattan graph or trellis graph or lattice for Viterbi/forward-backward and Baum-Wlech algorithm 
+
+*Question 1: Given a model and probability of being in each state, what is the probability that the next symbol is b?
+P( x_{t+1} = b ) = \sum_{s \in States} { P(\pi_{t}  = s) * p(x_{t+1} = b | \pi_{t} = s) }
+*Question 2: Compute the accuracy of guessing the symbol across a large sequence. Is the method accurate?
