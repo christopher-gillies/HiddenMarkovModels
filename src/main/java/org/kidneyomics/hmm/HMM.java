@@ -39,6 +39,7 @@ public class HMM {
 	 * @return returns the first element in the sequence
 	 */
 	public StateSymbolPair generateSequence(int n) {
+		//TODO: Change to return StateSymbolPairCollection
 		//List<StateSymbolPair> sequence = new ArrayList<StateSymbolPair>(n);
 		
 		//set the current state to be the start state
@@ -99,7 +100,7 @@ public class HMM {
 		return prob;
 	}
 	
-	public double calculateJointProbabilityOfSequencesAndStates(StateSymbolPair sequence, boolean log) {
+	public double calculateJointProbabilityOfSequencesAndStates(StateSymbolPairCollection sequence, boolean log) {
 		//TODO: finish this function
 //		double res = 0.0;
 //		if(sequence.size() == 0) {
