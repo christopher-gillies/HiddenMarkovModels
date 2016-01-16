@@ -1,15 +1,44 @@
 package org.kidneyomics.hmm;
 
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 public class StateSymbolPair {
 	private State state;
 	private Symbol symbol;
+	private StateSymbolPair next = null;
+	
+	public List<StateSymbolPair> getAsList() {
+		List<StateSymbolPair> res = new LinkedList<StateSymbolPair>();
+		
+		//add first
+		StateSymbolPair current = this;
+		res.add(current);
+		
+		//add rest
+		while(current.getNext() != null) {
+			//get next
+			StateSymbolPair next = current.getNext();
+			res.add(next);
+			//make current = to next
+			current = next;
+		}
+		
+		return res;
+	}
 	
 	public StateSymbolPair(State state, Symbol symbol) {
 		this.state = state;
 		this.symbol = symbol;
+	}
+	
+	public void setNext(StateSymbolPair next) {
+		this.next = next;
+	}
+	
+	public StateSymbolPair getNext() {
+		return next;
 	}
 	
 	public State getState() {

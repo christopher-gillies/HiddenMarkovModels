@@ -12,9 +12,13 @@ public class Symbol {
 		return new Symbol(symbol);
 	}
 	
+	public String getSymbolName() {
+		return this.symbol;
+	}
+	
 	@Override
 	public String toString() {
-		return this.symbol;
+		return getSymbolName();
 	}
 	
 }
