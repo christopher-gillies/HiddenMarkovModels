@@ -7,6 +7,13 @@ public class State {
 	private final String name;
 	private final boolean startState;
 	
+	public enum VISIT_LEVEL {
+		NOT_VISITED,
+		VISITED,
+		CLOSED
+	}
+	
+	private VISIT_LEVEL visitLevel = VISIT_LEVEL.NOT_VISITED;
 	
 	private State(String name, boolean startState) {
 		this.startState = startState;
@@ -51,6 +58,14 @@ public class State {
 		return this.emissions;
 	}
 	
+	public VISIT_LEVEL getVisitLevel() {
+		return visitLevel;
+	}
+
+	public void setVisitLevel(VISIT_LEVEL visitLevel) {
+		this.visitLevel = visitLevel;
+	}
+
 	@Override
 	public String toString() {
 		return this.name;

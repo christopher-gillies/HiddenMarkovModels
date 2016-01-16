@@ -2,6 +2,7 @@ package org.kidneyomics.hmm;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, ProbabilityMap<T> {
 	
@@ -22,10 +23,11 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	
 	
 	public double getProbability(T t) {
-		if(!this.probs.containsKey(t)) {
-			throw new IllegalArgumentException("Object " + t + " not found");
+		if(this.probs.containsKey(t)) {
+			return this.probs.get(t);
+		} else {
+			return 0.0;
 		}
-		return this.probs.get(t);
 	}
 	
 	public void setProbability(T t, double value) {
@@ -50,5 +52,9 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 
 	public T emit() {
 		return randomNumberService.emit(probs);
+	}
+	
+	public Set<T> getKeys() {
+		return this.probs.keySet();
 	}
 }
