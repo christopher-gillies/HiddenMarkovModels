@@ -33,7 +33,11 @@ public class HMM {
 		return new HMM(startState);
 	}
 	
-	
+	/**
+	 * 
+	 * @param n
+	 * @return returns the first element in the sequence
+	 */
 	public StateSymbolPair generateSequence(int n) {
 		//List<StateSymbolPair> sequence = new ArrayList<StateSymbolPair>(n);
 		
@@ -57,6 +61,7 @@ public class HMM {
 			}
 			last = pair;
 			
+			//we set the first state if it is null
 			if(first == null) {
 				first = pair;
 			}
