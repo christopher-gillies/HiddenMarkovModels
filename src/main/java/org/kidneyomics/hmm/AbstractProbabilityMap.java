@@ -23,6 +23,7 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	
 	
 	public double getProbability(T t) {
+		//consider throwing exception if the state transistion is not possible
 		if(this.probs.containsKey(t)) {
 			return this.probs.get(t);
 		} else {

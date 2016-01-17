@@ -1,11 +1,7 @@
 package org.kidneyomics.hmm;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -38,37 +34,25 @@ public class HMM {
 	 * @param n
 	 * @return returns the first element in the sequence
 	 */
-	public StateSymbolPair generateSequence(int n) {
-		//TODO: Change to return StateSymbolPairCollection
-		//List<StateSymbolPair> sequence = new ArrayList<StateSymbolPair>(n);
+	public StateSymbolPairOrderedSet generateSequence(int n) {
+
 		
+		StateSymbolPairOrderedSet orderedSet = new StateSymbolPairOrderedSet();
 		//set the current state to be the start state
 		State current = startState;
 		
 		//generate a sequence of length n by getting the next state and generating a symbol from it
 		//then storing the result in the sequence result
-		StateSymbolPair last = null;
-		StateSymbolPair first = null;
 		for(int i = 0; i < n; i++) {
 			
 			current = current.emitNextState();
 			Symbol emittedSymbol = current.emitSymbol();
 						
 			StateSymbolPair pair = new StateSymbolPair(current, emittedSymbol);
-			
-			//store pointer to next state
-			if(last != null) {
-				last.setNext(pair);
-			}
-			last = pair;
-			
-			//we set the first state if it is null
-			if(first == null) {
-				first = pair;
-			}
+			orderedSet.add(pair);
 		}
 		
-		return first;
+		return orderedSet;
 	}
 	
 	public double calcProbOfSymbolGivenStateProbs(Symbol symbol, Map<State,Double> map) {
@@ -100,34 +84,54 @@ public class HMM {
 		return prob;
 	}
 	
-	public double calculateJointProbabilityOfSequencesAndStates(StateSymbolPairCollection sequence, boolean log) {
-		//TODO: finish this function
-//		double res = 0.0;
-//		if(sequence.size() == 0) {
-//			return 0.0;
-//		}
-//		
-//		//compute the prob(x,pi) = a_0k * [e_k(b) * akl * e_l(b) ...]
-//		State firstSate = sequence.get(0).getState();
-//		double startProb = Math.log(this.startState.getTransitions().getProbability(firstSate));
-//		res = startProb;
-//		
-//		if(sequence.size() == 1) {
-//			StateSymbolPair pair = sequence.get(0);
-//			Symbol symbol = pair.getEmittedSymbol();
-//			State state = pair.getState();
-//			double emitProb = Math.log(state.getEmissions().getProbability(symbol));
-//			res = res + emitProb;
-//		} else {
-//			
-//		}
-//		
-//		if(!log) {
-//			return res;
-//		} else {
-//			return Math.exp(res);
-//		}
-		return 0.0;
+	/**
+	 * 
+	 * @param sequence
+	 * @param log return in log scale
+	 * @return probability of observing the sequence and the states
+	 */
+	public double calculateJointProbabilityOfSequencesAndStates(StateSymbolPairOrderedSet sequence, boolean log) {
+		
+		double res = 0.0;
+		if(sequence.size() == 0) {
+			return 0.0;
+		}
+		
+		//compute the prob(x,pi) = a_0k * [e_k(b) * akl * e_l(b) ...]
+		//log prob(x,pi) = log(a_0k) + log( e_k(b) )  +log( akl + log( e_l(b)) ...]
+		
+		//compute transition probability into first state
+		State firstSate = sequence.getFirst().getState();
+		double startProb = Math.log(this.startState.getTransitions().getProbability(firstSate));
+		res = startProb;
+
+		//compute the emission probability for the state
+		//compute the transition probability to next state if not null
+		for(StateSymbolPair pair : sequence) {
+			Symbol symbol = pair.getEmittedSymbol();
+			State state = pair.getState();
+			
+			//if symbol is null then this is a null state 
+			// that is there are no emissions so do not calculate the prob of emitting a symbol
+			if(symbol != null) {
+				double emitProb = Math.log(state.getEmissions().getProbability(symbol));
+				res = res + emitProb;
+			}
+			
+			if(pair.getNext() != null) {
+				State nextState = pair.getNext().getState();
+				double transitionProb = Math.log(state.getTransitions().getProbability(nextState));
+				res = res + transitionProb;
+			}
+		}
+		
+
+		if(log) {
+			return res;
+		} else {
+			return Math.exp(res);
+		}
+		
 	}
 	
 	private void discoverStatesAndSymbols(State state) {
