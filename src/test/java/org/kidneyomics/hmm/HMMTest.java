@@ -152,16 +152,39 @@ public class HMMTest {
 			}
 		}
 		
+		double sum = 0;
+		double max = 0;
+		StateSymbolPairOrderedSet best = null; 
 		for(int i = 0; i < allPairs.size(); i++) {
 			for(int j = 0; j < allPairs.size(); j++) {
 				for(int k = 0; k < allPairs.size(); k++) {
 					StateSymbolPair pair1 = (StateSymbolPair) allPairs.get(i).clone();
 					StateSymbolPair pair2 = (StateSymbolPair) allPairs.get(j).clone();
 					StateSymbolPair pair3 = (StateSymbolPair) allPairs.get(k).clone();
-					// comput prob of this sequence
+					
+					StateSymbolPairOrderedSet set = new StateSymbolPairOrderedSet();
+					set.add(pair1);
+					set.add(pair2);
+					set.add(pair3);
+					
+					double prob = hmm.calculateJointProbabilityOfSequencesAndStates(set, false);
+					
+					if(prob > max) {
+						max = prob;
+						best = set;
+					}
+					sum += prob;
 				}
 			}
 		}
+		
+		assertEquals(1.0,sum,0.00001);
+		
+		
+		System.err.println("Best prob: " + max);
+		System.err.println(best.toString());
+		
+		assertEquals(0.5 * Math.pow(0.9,5),max,0.0001);
 	}
 	
 }
