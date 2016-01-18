@@ -34,10 +34,10 @@ public class HMM {
 	 * @param n
 	 * @return returns the first element in the sequence
 	 */
-	public StateSymbolPairOrderedSet generateSequence(int n) {
+	public NextableOrderedSet generateSequence(int n) {
 
 		
-		StateSymbolPairOrderedSet orderedSet = new StateSymbolPairOrderedSet();
+		NextableOrderedSet orderedSet = new NextableOrderedSet();
 		//set the current state to be the start state
 		State current = startState;
 		
@@ -90,7 +90,7 @@ public class HMM {
 	 * @param log return in log scale
 	 * @return probability of observing the sequence and the states
 	 */
-	public double calculateJointProbabilityOfSequencesAndStates(StateSymbolPairOrderedSet sequence, boolean log) {
+	public double calculateJointProbabilityOfSequencesAndStates(NextableOrderedSet<StateSymbolPair> sequence, boolean log) {
 		
 		double res = 0.0;
 		if(sequence.size() == 0) {

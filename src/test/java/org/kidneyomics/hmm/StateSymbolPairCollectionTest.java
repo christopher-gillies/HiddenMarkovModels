@@ -13,7 +13,7 @@ public class StateSymbolPairCollectionTest {
 		StateSymbolPair pair1 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));
 		StateSymbolPair pair2 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
 		
-		StateSymbolPairOrderedSet collection = new StateSymbolPairOrderedSet();
+		NextableOrderedSet<StateSymbolPair> collection = new NextableOrderedSet<StateSymbolPair>();
 		
 		collection.add(pair1);
 		
@@ -42,7 +42,7 @@ public class StateSymbolPairCollectionTest {
 		StateSymbolPair pair4 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
 		
 		
-		StateSymbolPairOrderedSet collection = new StateSymbolPairOrderedSet();
+		NextableOrderedSet<StateSymbolPair>  collection = new NextableOrderedSet<StateSymbolPair>();
 		
 		assertTrue(collection.add(pair1));
 		assertTrue(collection.add(pair2));

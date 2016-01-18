@@ -3,30 +3,38 @@ package org.kidneyomics.hmm;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.Set;
 
-public class StateSymbolPairOrderedSet implements Set<StateSymbolPair> {
+/**
+ * 
+ * @author cgillies
+ *
+ * @param <T> that extends Nextable
+ * 
+ * This class has a linked list and a hashset to store items in a sequence, where each item in the sequence has a distinct hashcode
+ * adding items to the set will correctly set the pointers for Nextable objects
+ * 
+ */
+public class NextableOrderedSet<T extends Nextable<T>> implements Set<T> {
 
-	private final Set<StateSymbolPair> items = new HashSet<StateSymbolPair>();
-	private StateSymbolPair head = null;
-	private StateSymbolPair tail = null;
+	private final Set<T> items = new HashSet<T>();
+	private T head = null;
+	private T tail = null;
 	private int size = 0;
 	
-	public StateSymbolPairOrderedSet() {
+	public NextableOrderedSet() {
 		
 	}
 	
-	public StateSymbolPair getFirst() {
+	public T getFirst() {
 		return head;
 	}
 	
-	public StateSymbolPair getLast() {
+	public T getLast() {
 		return this.tail;
 	}
 	
-	public boolean add(StateSymbolPair e) {
+	public boolean add(T e) {
 		if(e == null) {
 			throw new IllegalArgumentException("Input to add cannot be null");
 		}
@@ -73,9 +81,9 @@ public class StateSymbolPairOrderedSet implements Set<StateSymbolPair> {
 		return true;
 	}
 
-	public boolean addAll(Collection<? extends StateSymbolPair> collection) {
+	public boolean addAll(Collection<? extends T> collection) {
 		boolean ret = true;
-		for(StateSymbolPair item : collection) {
+		for(T item : collection) {
 			ret = ret && add(item);
 		}
 		return ret;
@@ -104,8 +112,8 @@ public class StateSymbolPairOrderedSet implements Set<StateSymbolPair> {
 		}
 	}
 
-	public Iterator<StateSymbolPair> iterator() {
-		return new StateSymbolPairIterator(this.head);
+	public Iterator<T> iterator() {
+		return new NextableIterator<T>(this.head);
 	}
 
 	public boolean remove(Object arg0) {
@@ -128,9 +136,9 @@ public class StateSymbolPairOrderedSet implements Set<StateSymbolPair> {
 	}
 
 	public Object[] toArray() {
-		StateSymbolPair[] arr = new StateSymbolPair[this.size];
+		Object[] arr = new Object[this.size];
 		int i = 0;
-		for(StateSymbolPair pair : this) {
+		for(T pair : this) {
 			arr[i] = pair;
 			i++;
 		}
@@ -138,22 +146,28 @@ public class StateSymbolPairOrderedSet implements Set<StateSymbolPair> {
 		return arr;
 	}
 
-	public <T> T[] toArray(T[] arg0) {
+	public <E> E[] toArray(E[] arg0) {
 		
 		if(arg0.length != size) {
 			throw new IllegalArgumentException("input array must be the same size as the list");
 		}
 		
+		if(size == 0) {
+			return arg0;
+		}
+		
 		Class<?> ofArray = arg0.getClass().getComponentType();
-		if(ofArray != this.getClass()) {
-			throw new IllegalArgumentException("array must be StateSymbolPair");
+		if(ofArray != this.head.getClass()) {
+			throw new IllegalArgumentException("array must be ");
 		}
 		
 		
 		int i = 0;
-		for(StateSymbolPair pair : this) {
+		
+		
+		for(T pair : this) {
 			
-			arg0[i] = (T) pair;
+			arg0[i] = (E) pair;
 			i++;
 		}
 		return arg0;
@@ -168,62 +182,13 @@ public class StateSymbolPairOrderedSet implements Set<StateSymbolPair> {
 	}
 	
 	public String toString(String delimiter) {
-		StringBuilder seqSb = new StringBuilder();
-		seqSb.append("Sequence:\t");
-		StringBuilder stateSb = new StringBuilder();
-		stateSb.append("States:\t\t");
-		
-		Iterator<StateSymbolPair> iter = this.iterator();
-		
-		while(iter.hasNext()) {
-			StateSymbolPair next = iter.next();
-			seqSb.append(next.getEmittedSymbol());
-			stateSb.append(next.getState());
-			
-			if(iter.hasNext()) {
-				seqSb.append(delimiter);
-				stateSb.append(delimiter);
-			}
-			
-		}
-		
-		seqSb.append("\n");
-		seqSb.append(stateSb.toString());
-		
-		return seqSb.toString();
+		return this.head.toString(delimiter);
 	}
 	
 	
-	private class StateSymbolPairIterator implements Iterator<StateSymbolPair> {
 
-		StateSymbolPair current = null;
-		StateSymbolPair next = null;
-		StateSymbolPairIterator(StateSymbolPair head) {
-			current = head;
-			next = head;
-		}
-		
-		public boolean hasNext() {
-			if(next != null) {
-				return true;
-			} else {
-				return false;
-			}
-		}
 
-		public StateSymbolPair next() {
-			current = next;
-			next = current.getNext();
-			return current;
-		}
 
-		public void remove() {
-			// TODO Auto-generated method stub
-			
-		}
-		
-		
-	}
 
 
 }
