@@ -39,7 +39,7 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 		this.probs.remove(t);
 	}
 
-	public boolean isNull() {
+	public boolean isSilent() {
 		return probs.size() == 0;
 	}
 	
@@ -47,7 +47,7 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	 * returns true if the probabilities sum to one or if there are no objects in it.
 	 */
 	public boolean isValid() {
-		return isNull() || randomNumberService.sumsToOne(probs);
+		return isSilent() || randomNumberService.sumsToOne(probs);
 	}
 
 
