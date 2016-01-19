@@ -11,4 +11,8 @@ class Emissions extends AbstractProbabilityMap<Symbol> {
 		super(service);
 	}
 	
+	Emissions(RandomNumberService service, boolean immutable) {
+		super(service,immutable);
+	}
+	
 }

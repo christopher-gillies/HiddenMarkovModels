@@ -11,4 +11,8 @@ class Transistions extends AbstractProbabilityMap<State> {
 		super(service);
 	}
 	
+	Transistions(RandomNumberService service, boolean immutable) {
+		super(service,immutable);
+	}
+	
 }

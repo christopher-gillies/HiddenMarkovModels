@@ -2,6 +2,8 @@ package org.kidneyomics.hmm;
 
 public class State {
 	
+	private static RandomNumberService randomService = new DefaultRandomNumberSerivce();
+	
 	private final Emissions emissions;
 	private final Transistions transitions;
 	private final String name;
@@ -24,8 +26,23 @@ public class State {
 	private State(String name, STATE_TYPE stateType) {
 		this.stateType = stateType;
 		this.name = name;
-		this.emissions = new Emissions();
-		this.transitions = new Transistions();
+		if(this.isStartState()) {
+			//the start state should have no emission so mark it as immutable
+			this.emissions = new Emissions(randomService,true);
+			this.transitions = new Transistions(randomService);
+		} else if(this.isEndState()) {
+			//the end state can have no transitions out of it
+			//so mark it as immutable;
+			this.emissions = new Emissions(randomService);
+			this.transitions = new Transistions(randomService,true);
+		} else {
+			this.emissions = new Emissions(randomService);
+			this.transitions = new Transistions(randomService);
+		}
+	}
+	
+	public static void setRandomService(RandomNumberService randomService) {
+		State.randomService = randomService;
 	}
 	
 	public static State createStartState() {

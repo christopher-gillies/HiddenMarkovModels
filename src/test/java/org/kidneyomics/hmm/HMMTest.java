@@ -63,6 +63,47 @@ public class HMMTest {
 	}
 	
 	@Test
+	public void testDiscoverStates2() {
+		
+		State start = State.createStartState();
+		State fair = State.createState("F");
+		State fair2 = State.createState("F");
+		
+		start.getTransitions().setProbability(fair, 1);
+		
+		fair.getTransitions().setProbability(fair2, 1);
+		boolean thrown = false;
+		try {
+			HMM hmm = HMM.createHMMFromStartState(start);
+		} catch(RuntimeException e) {
+			assertNotNull(e);
+			thrown = true;
+		}
+		assertTrue(thrown);
+	}
+	
+	@Test
+	public void testDiscoverStates3() {
+		
+		State start = State.createStartState();
+		State fair = State.createState("F");
+		State biased = State.createState("B");
+		
+		start.getTransitions().setProbability(fair, 1);
+		fair.getEmissions().setProbability(Symbol.createSymbol("H"), 1);
+		fair.getTransitions().setProbability(biased, 1);
+		biased.getEmissions().setProbability(Symbol.createSymbol("H"), 1);
+		boolean thrown = false;
+		try {
+			HMM hmm = HMM.createHMMFromStartState(start);
+		} catch(RuntimeException e) {
+			assertNotNull(e);
+			thrown = true;
+		}
+		assertTrue(thrown);
+	}
+	
+	@Test
 	public void validateGeneratedSequenceLength() {
 		
 		HMM hmm = createBiasedCoinHMM();

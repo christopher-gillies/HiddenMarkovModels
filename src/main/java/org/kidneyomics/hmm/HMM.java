@@ -11,6 +11,7 @@ import org.kidneyomics.hmm.State.VISIT_LEVEL;
 public class HMM {
 	
 	private final State startState;
+	private final State endState;
 	private final HashMap<String,State> states;
 	private final HashMap<String,Symbol> symbols;
 	
@@ -19,6 +20,21 @@ public class HMM {
 		this.states = new HashMap<String,State>();
 		this.symbols = new HashMap<String,Symbol>();
 		discoverStatesAndSymbols(this.startState);
+		
+		State endStateTmp = null;
+		//check and see if there is an explicit end state
+		for(State s : states.values()) {
+			if(s.isEndState()) {
+				endStateTmp = s;
+				break;
+			}
+		}
+		if(endStateTmp == null) {
+			this.endState = State.createEndState();
+		} else {
+			this.endState = endStateTmp;
+			this.states.remove(endState.getName());
+		}
 	}
 	
 	
@@ -27,6 +43,10 @@ public class HMM {
 			throw new IllegalArgumentException("Please input a start state");
 		}
 		return new HMM(startState);
+	}
+	
+	public State getEndState() {
+		return this.endState;
 	}
 	
 	public State getStartState() {
@@ -138,6 +158,9 @@ public class HMM {
 		
 	}
 	
+	/*
+	 * Perform breadth first search
+	 */
 	private void discoverStatesAndSymbols(State state) {
 		Queue<State> queue = new LinkedList<State>();
 		
@@ -148,14 +171,43 @@ public class HMM {
 			State next = queue.poll();
 			if(!next.isStartState()) {
 				//Store state
-				this.states.put(next.getName(), next);
+				//first check if we have already seen this state
+				if(this.states.containsKey(next.getName())) {
+					//check and see if this state is the has the same reference as the
+					//one already in the hash
+					//if it is different then someone is trying to have two states with the same name
+					//this case is not allowed
+					State stored = this.states.get(next.getName());
+					if(stored != next) {
+						throw new RuntimeException("There are two states with the same name: " + stored.getName());
+					}
+				} else {
+					//add the state b/c we have not seen it yet
+					this.states.put(next.getName(), next);
+				}
 				
 				//Store symbols
 				for(Symbol symbol : next.getEmissions().getKeys()) {
-					this.symbols.put(symbol.getSymbolName(), symbol);
+					if(this.symbols.containsKey(symbol.getName())) {
+						//check and see if this symbol is the has the same reference as the
+						//one already in the hash
+						//if it is different then someone is trying to have two Symbols with the same name
+						//this case is not allowed
+						
+						Symbol stored = this.symbols.get(symbol.getName());
+						//check object reference
+						if(stored != symbol) {
+							throw new RuntimeException("There are two symbols with the same name: " + stored.getName());
+						}
+						
+					} else {
+						//add symbol if we did not find it
+						this.symbols.put(symbol.getName(), symbol);
+					}
 				}
 			}
 			
+			//add states to the queue if this node is not already closed
 			if(next.getVisitLevel() != VISIT_LEVEL.CLOSED) {
 				for(State s : next.getTransitions().getKeys()) {
 					if(s.getVisitLevel() == VISIT_LEVEL.NOT_VISITED) {
@@ -165,6 +217,7 @@ public class HMM {
 				}
 			}
 			
+			//close this state b/c all reachable nodes have been added to the queue
 			next.setVisitLevel(VISIT_LEVEL.CLOSED);
 		}
 		

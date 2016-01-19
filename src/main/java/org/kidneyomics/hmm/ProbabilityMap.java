@@ -12,4 +12,5 @@ public interface ProbabilityMap<T> {
 	 * @return true if this probability map has no objects in it
 	 */
 	boolean isSilent();
+	boolean isImmutable();
 }

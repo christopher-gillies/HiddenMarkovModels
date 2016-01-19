@@ -2,23 +2,23 @@ package org.kidneyomics.hmm;
 
 public class Symbol {
 	
-	private final String symbol;
+	private final String name;
 	
 	private Symbol(String symbol) {
-		this.symbol = symbol;
+		this.name = symbol;
 	}
 	
 	public static Symbol createSymbol(String symbol) {
 		return new Symbol(symbol);
 	}
 	
-	public String getSymbolName() {
-		return this.symbol;
+	public String getName() {
+		return this.name;
 	}
 	
 	@Override
 	public String toString() {
-		return getSymbolName();
+		return getName();
 	}
 	
 }

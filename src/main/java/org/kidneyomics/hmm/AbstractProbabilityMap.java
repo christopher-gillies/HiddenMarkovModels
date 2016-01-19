@@ -9,16 +9,25 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	//ideally the state objects will be pointers to the other states in the model
 	protected final Map<T,Double> probs;
 	protected final RandomNumberService randomNumberService;
+	protected final boolean immutable;
 	
 	protected AbstractProbabilityMap() {
 		this.probs = new HashMap<T,Double>();
 		this.randomNumberService = new DefaultRandomNumberSerivce();
+		this.immutable = false;
 	}
 	
 	
 	protected AbstractProbabilityMap(RandomNumberService randomNumberService) {
 		this.probs = new HashMap<T,Double>();
 		this.randomNumberService = randomNumberService;
+		this.immutable = false;
+	}
+	
+	protected AbstractProbabilityMap(RandomNumberService randomNumberService, boolean immutable) {
+		this.probs = new HashMap<T,Double>();
+		this.randomNumberService = randomNumberService;
+		this.immutable = immutable;
 	}
 	
 	
@@ -32,11 +41,15 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	}
 	
 	public void setProbability(T t, double value) {
-		this.probs.put(t, value);
+		if(!immutable) {
+			this.probs.put(t, value);
+		}
 	}
 	
 	public void remove(T t) {
-		this.probs.remove(t);
+		if(!immutable) {
+			this.probs.remove(t);
+		}
 	}
 
 	public boolean isSilent() {
@@ -49,8 +62,11 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	public boolean isValid() {
 		return isSilent() || randomNumberService.sumsToOne(probs);
 	}
-
-
+	
+	public boolean isImmutable() {
+		return this.immutable;
+	}
+	
 	public T emit() {
 		return randomNumberService.emit(probs);
 	}
