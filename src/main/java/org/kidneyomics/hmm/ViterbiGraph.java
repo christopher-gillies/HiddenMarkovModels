@@ -11,9 +11,14 @@ class ViterbiGraph {
 	ViterbiGraph(HMM hmm, NextableOrderedSet<NextableSymbol> emittedSymbols) {
 		this.hmm = hmm;
 		this.emittedSymbols = emittedSymbols;
+		buildViterbiGraph();
 	}
 	
-	
+	private void buildViterbiGraph() {
+		State startState = this.hmm.getStartState();
+		
+		ViterbiNode startNode = new ViterbiNode(null, startState, 0);
+	}
 	
 	
 	

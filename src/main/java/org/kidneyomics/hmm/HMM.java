@@ -29,15 +29,19 @@ public class HMM {
 		return new HMM(startState);
 	}
 	
+	public State getStartState() {
+		return this.startState;
+	}
+	
 	/**
 	 * 
 	 * @param n
 	 * @return returns the first element in the sequence
 	 */
-	public NextableOrderedSet generateSequence(int n) {
+	public NextableOrderedSet<StateSymbolPair> generateSequence(int n) {
 
 		
-		NextableOrderedSet orderedSet = new NextableOrderedSet();
+		NextableOrderedSet<StateSymbolPair> orderedSet = new NextableOrderedSet<StateSymbolPair>();
 		//set the current state to be the start state
 		State current = startState;
 		
