@@ -18,10 +18,18 @@ class ViterbiNode {
 	private boolean forwardFinished = false;
 	private boolean backwardFinished = false;
 	
-	ViterbiNode(State state) {
+	private ViterbiNode(State state) {
 		this.state = state;
 		this.nextNodes = new LinkedList<ViterbiNode>();
 		this.previousNodes = new LinkedList<ViterbiNode>();
+	}
+	
+	public static ViterbiNode createViterbiNodeFromState(State state) {
+		if(state == null) {
+			throw new IllegalArgumentException("state cannot be null");
+		} else {
+			return new ViterbiNode(state);
+		}
 	}
 	
 	public boolean isSilentState() {
@@ -83,30 +91,49 @@ class ViterbiNode {
 		this.column = column;
 	}
 
-	public List<ViterbiNode> createNextNodes(Symbol nextSymbol) {
+	//should be used to build from the left to the right
+	public void setTransitions(Symbol nextSymbol) {
 		this.nextNodes.clear();
 		
-		Collection<State> nextStates = this.state.getTransitions().getKeys();
-		for(State state : nextStates) {
-	
-			ViterbiNode newNode;
-			//if is silent state then stay in the same column
-			//otherwise increase column
-			if(state.isSilentState()) {
-				newNode = new ViterbiNode(state);
-				this.getColumn().addNode(newNode);
-			} else {
-				newNode = new ViterbiNode(state);
-				this.getColumn().getNext().addNode(newNode);
+		//we there are no transitions out of last column
+		if(this.getColumn().isLastColumn()) {
+			//getting previous column would be really useful here
+			ViterbiColumn previous = this.getColumn().getPrevious();
+			for(ViterbiNode node : previous.getNodes()) {
+				//add forward edge from previous node to end node
+				node.getNextNodes().add(this);
+				//add backward edge from this node to previous node
+				this.previousNodes.add(node);
 			}
-			
-			//set backward edge to this node
-			newNode.getPreviousNodes().add(this);
-			//set forward edge from this node to next node;
-			this.nextNodes.add(newNode);
+		} else {
+			Collection<State> nextStates = this.state.getTransitions().getKeys();
+			for(State nextState : nextStates) {
+		
+				ViterbiNode node;
+				ViterbiColumn column;
+				//if is silent state then stay in the same column
+				//otherwise increase column
+				if(nextState.isSilentState()) {
+					column = this.getColumn();
+					node = column.getNode(nextState);
+				} else {
+					column = this.getColumn().getNext();
+					node = column.getNode(nextState);
+				}
+				
+				if(node == null) {
+					node = ViterbiNode.createViterbiNodeFromState(nextState);
+					column.addNode(node);
+				}
+				
+				//set backward edge to this node
+				node.getPreviousNodes().add(this);
+				//set forward edge from this node to next node;
+				this.nextNodes.add(node);
+			}
 		}
 		
-		return this.nextNodes;
+
 	}
 	
 	

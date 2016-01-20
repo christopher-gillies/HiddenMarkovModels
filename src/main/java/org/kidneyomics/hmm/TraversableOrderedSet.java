@@ -15,14 +15,14 @@ import java.util.Set;
  * adding items to the set will correctly set the pointers for Nextable objects
  * 
  */
-public class NextableOrderedSet<T extends Nextable<T>> implements Set<T> {
+public class TraversableOrderedSet<T extends Traverseable<T>> implements Set<T> {
 
 	private final Set<T> items = new HashSet<T>();
 	private T head = null;
 	private T tail = null;
 	private int size = 0;
 	
-	public NextableOrderedSet() {
+	public TraversableOrderedSet() {
 		
 	}
 	
@@ -49,17 +49,19 @@ public class NextableOrderedSet<T extends Nextable<T>> implements Set<T> {
 			head = e;
 			tail = e;
 		} else if(size == 1) {
-			// [H]
-			// [CT]
+			// [H] head
+			// [CT] current tail
 			head.setNext(tail);
 			tail.setNext(e);
 			tail = e;
-			
+			tail.setPrevious(head);
 			// [H] --> [CT] --> [e]
 			//tail = [e]
 		} else {
 			//size > 1
 			tail.setNext(e);
+			e.setPrevious(tail);
+			//set e to be the current tail
 			tail = e;
 		}
 		
@@ -113,7 +115,7 @@ public class NextableOrderedSet<T extends Nextable<T>> implements Set<T> {
 	}
 
 	public Iterator<T> iterator() {
-		return new NextableIterator<T>(this.head);
+		return new TraversableIterator<T>(this.head);
 	}
 
 	public boolean remove(Object arg0) {

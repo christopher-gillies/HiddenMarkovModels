@@ -2,12 +2,12 @@ package org.kidneyomics.hmm;
 
 import java.util.Iterator;
 
-public class NextableIterator<T extends Nextable<T>> implements Iterator<T> {
+public class TraversableIterator<T extends Traverseable<T>> implements Iterator<T> {
 
 	T current = null;
 	T next = null;
 	
-	NextableIterator(T head) {
+	TraversableIterator(T head) {
 		current = head;
 		next = head;
 	}

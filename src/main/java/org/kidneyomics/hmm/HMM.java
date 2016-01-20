@@ -59,10 +59,10 @@ public class HMM {
 	 * @param n
 	 * @return returns the first element in the sequence
 	 */
-	public NextableOrderedSet<StateSymbolPair> generateSequence(int n) {
+	public TraversableOrderedSet<StateSymbolPair> generateSequence(int n) {
 
 		
-		NextableOrderedSet<StateSymbolPair> orderedSet = new NextableOrderedSet<StateSymbolPair>();
+		TraversableOrderedSet<StateSymbolPair> orderedSet = new TraversableOrderedSet<StateSymbolPair>();
 		//set the current state to be the start state
 		State current = startState;
 		
@@ -115,7 +115,7 @@ public class HMM {
 	 * @param log return in log scale
 	 * @return probability of observing the sequence and the states
 	 */
-	public double calculateJointProbabilityOfSequencesAndStates(NextableOrderedSet<StateSymbolPair> sequence, boolean log) {
+	public double calculateJointProbabilityOfSequencesAndStates(TraversableOrderedSet<StateSymbolPair> sequence, boolean log) {
 		
 		double res = 0.0;
 		if(sequence.size() == 0) {

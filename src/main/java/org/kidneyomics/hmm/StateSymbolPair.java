@@ -2,11 +2,11 @@ package org.kidneyomics.hmm;
 
 import java.util.Iterator;
 
-public class StateSymbolPair implements Cloneable, Nextable<StateSymbolPair> {
+public class StateSymbolPair implements Cloneable, Traverseable<StateSymbolPair> {
 	private State state;
 	private Symbol symbol;
 	private StateSymbolPair next = null;
-	
+	private StateSymbolPair previous = null;
 	
 	public StateSymbolPair(State state, Symbol symbol) {
 		this.state = state;
@@ -48,7 +48,7 @@ public class StateSymbolPair implements Cloneable, Nextable<StateSymbolPair> {
 		StringBuilder stateSb = new StringBuilder();
 		stateSb.append("States:\t\t");
 		
-		Iterator<StateSymbolPair> iter = new NextableIterator<StateSymbolPair>(this);
+		Iterator<StateSymbolPair> iter = new TraversableIterator<StateSymbolPair>(this);
 		
 		while(iter.hasNext()) {
 			StateSymbolPair next = iter.next();
@@ -66,6 +66,18 @@ public class StateSymbolPair implements Cloneable, Nextable<StateSymbolPair> {
 		seqSb.append(stateSb.toString());
 		
 		return seqSb.toString();
+	}
+
+	public void setPrevious(StateSymbolPair previous) {
+		this.previous = previous;
+	}
+
+	public StateSymbolPair getPrevious() {
+		return previous;
+	}
+
+	public boolean hasPrevious() {
+		return this.previous != null;
 	}
 	
 }

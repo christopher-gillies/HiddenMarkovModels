@@ -1,6 +1,6 @@
 package org.kidneyomics.hmm;
 
-public interface Nextable<T> {
+public interface Traverseable<T> {
 	/**
 	 * Set the next object in the sequence
 	 * @param next
@@ -9,10 +9,29 @@ public interface Nextable<T> {
 	void setNext(T next);
 	
 	/**
+	 * Set the previous item
+	 * @param previous
+	 */
+	void setPrevious(T previous);
+	
+	
+	/**
 	 * 
 	 * @return the next object in the sequence
 	 */
 	T getNext();
+	
+	/**
+	 * get the previous item
+	 * @return
+	 */
+	T getPrevious();
+	
+	/**
+	 * true if there is a previous item
+	 * @return
+	 */
+	boolean hasPrevious();
 	
 	/**
 	 * 

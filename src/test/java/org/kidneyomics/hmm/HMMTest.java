@@ -108,7 +108,7 @@ public class HMMTest {
 		
 		HMM hmm = createBiasedCoinHMM();
 		
-		NextableOrderedSet orderedSet = hmm.generateSequence(100);
+		TraversableOrderedSet orderedSet = hmm.generateSequence(100);
 		
 		assertEquals(100,orderedSet.size());
 		
@@ -162,7 +162,7 @@ public class HMMTest {
 		StateSymbolPair pair2 = new StateSymbolPair(biased, tails);
 		StateSymbolPair pair3 = new StateSymbolPair(biased, heads);
 		
-		NextableOrderedSet set = new NextableOrderedSet();
+		TraversableOrderedSet set = new TraversableOrderedSet();
 		set.add(pair1);
 		set.add(pair2);
 		set.add(pair3);
@@ -195,7 +195,7 @@ public class HMMTest {
 		
 		double sum = 0;
 		double max = 0;
-		NextableOrderedSet best = null; 
+		TraversableOrderedSet best = null; 
 		for(int i = 0; i < allPairs.size(); i++) {
 			for(int j = 0; j < allPairs.size(); j++) {
 				for(int k = 0; k < allPairs.size(); k++) {
@@ -203,7 +203,7 @@ public class HMMTest {
 					StateSymbolPair pair2 = (StateSymbolPair) allPairs.get(j).clone();
 					StateSymbolPair pair3 = (StateSymbolPair) allPairs.get(k).clone();
 					
-					NextableOrderedSet set = new NextableOrderedSet();
+					TraversableOrderedSet set = new TraversableOrderedSet();
 					set.add(pair1);
 					set.add(pair2);
 					set.add(pair3);

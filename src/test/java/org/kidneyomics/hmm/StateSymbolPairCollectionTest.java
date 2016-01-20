@@ -13,7 +13,7 @@ public class StateSymbolPairCollectionTest {
 		StateSymbolPair pair1 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));
 		StateSymbolPair pair2 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
 		
-		NextableOrderedSet<StateSymbolPair> collection = new NextableOrderedSet<StateSymbolPair>();
+		TraversableOrderedSet<StateSymbolPair> collection = new TraversableOrderedSet<StateSymbolPair>();
 		
 		collection.add(pair1);
 		
@@ -42,7 +42,7 @@ public class StateSymbolPairCollectionTest {
 		StateSymbolPair pair4 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
 		
 		
-		NextableOrderedSet<StateSymbolPair>  collection = new NextableOrderedSet<StateSymbolPair>();
+		TraversableOrderedSet<StateSymbolPair>  collection = new TraversableOrderedSet<StateSymbolPair>();
 		
 		assertTrue(collection.add(pair1));
 		assertTrue(collection.add(pair2));
@@ -85,6 +85,31 @@ public class StateSymbolPairCollectionTest {
 		
 		assertEquals(4,count);
 		
+	}
+	
+	@Test
+	public void testPrevious() {
+		StateSymbolPair pair1 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));
+		StateSymbolPair pair2 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
+		
+		StateSymbolPair pair3 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));
+		StateSymbolPair pair4 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
+		
+		
+		TraversableOrderedSet<StateSymbolPair>  collection = new TraversableOrderedSet<StateSymbolPair>();
+		
+		assertTrue(collection.add(pair1));
+		assertTrue(collection.add(pair2));
+		assertTrue(collection.add(pair3));
+		assertTrue(collection.add(pair4));
+		
+		
+		StateSymbolPair last = collection.getLast();
+		assertEquals(pair4,last);
+		assertEquals(pair3,last.getPrevious());
+		assertEquals(pair2,last.getPrevious().getPrevious());
+		assertEquals(pair1,last.getPrevious().getPrevious().getPrevious());
+		assertEquals(null,last.getPrevious().getPrevious().getPrevious().getPrevious());
 	}
 
 }
