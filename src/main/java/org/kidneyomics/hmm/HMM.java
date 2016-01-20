@@ -1,5 +1,6 @@
 package org.kidneyomics.hmm;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -239,5 +240,8 @@ public class HMM {
 		return this.symbols.get(name);
 	}
 	
+	public Collection<State> getStates() {
+		return this.states.values();
+	}
 	
 }

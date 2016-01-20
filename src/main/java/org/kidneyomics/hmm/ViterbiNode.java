@@ -6,20 +6,20 @@ import java.util.List;
 
 class ViterbiNode {
 	
-	private final Symbol symbol;
 	private final State state;
-	private final int column;
+	private ViterbiColumn column;
 	
 	private final List<ViterbiNode> nextNodes;
 	private final List<ViterbiNode> previousNodes;
 	
-	private double score = Double.MIN_VALUE;
-	private boolean isFinished = false;
+	private double forward = Double.MIN_VALUE;
+	private double backward = Double.MIN_VALUE;
 	
-	ViterbiNode(Symbol symbol, State state, int column) {
-		this.symbol = symbol;
+	private boolean forwardFinished = false;
+	private boolean backwardFinished = false;
+	
+	ViterbiNode(State state) {
 		this.state = state;
-		this.column = column;
 		this.nextNodes = new LinkedList<ViterbiNode>();
 		this.previousNodes = new LinkedList<ViterbiNode>();
 	}
@@ -28,31 +28,45 @@ class ViterbiNode {
 		return this.state.isSilentState();
 	}
 
-	public double getScore() {
-		return score;
+	public double getForward() {
+		return forward;
 	}
 
-	public void setScore(double score) {
-		this.score = score;
+	public void setForward(double forward) {
+		this.forward = forward;
 	}
 
-	public boolean isFinished() {
-		return isFinished;
+	public boolean isForwardFinished() {
+		return forwardFinished;
 	}
 
-	public void setFinished(boolean isFinished) {
-		this.isFinished = isFinished;
+	public void setForwardFinished(boolean forwardFinished) {
+		this.forwardFinished = forwardFinished;
+	}
+	
+
+	public double getBackward() {
+		return backward;
 	}
 
-	public Symbol getSymbol() {
-		return symbol;
+	public void setBackward(double backward) {
+		this.backward = backward;
 	}
+
+	public boolean isBackwardFinished() {
+		return backwardFinished;
+	}
+
+	public void setBackwardFinished(boolean backwardFinished) {
+		this.backwardFinished = backwardFinished;
+	}
+
 
 	public State getState() {
 		return state;
 	}
 
-	public int getColumn() {
+	public ViterbiColumn getColumn() {
 		return column;
 	}
 
@@ -65,6 +79,10 @@ class ViterbiNode {
 	}
 	
 	
+	public void setColumn(ViterbiColumn column) {
+		this.column = column;
+	}
+
 	public List<ViterbiNode> createNextNodes(Symbol nextSymbol) {
 		this.nextNodes.clear();
 		
@@ -75,9 +93,11 @@ class ViterbiNode {
 			//if is silent state then stay in the same column
 			//otherwise increase column
 			if(state.isSilentState()) {
-				newNode = new ViterbiNode(this.getSymbol(), state, this.getColumn());
+				newNode = new ViterbiNode(state);
+				this.getColumn().addNode(newNode);
 			} else {
-				newNode = new ViterbiNode(nextSymbol, state, this.getColumn() + 1);
+				newNode = new ViterbiNode(state);
+				this.getColumn().getNext().addNode(newNode);
 			}
 			
 			//set backward edge to this node
