@@ -4,7 +4,8 @@ package org.kidneyomics.hmm;
 public class TraversableSymbol implements Traverseable<TraversableSymbol> {
 
 	private Symbol symbol;
-	
+	private TraversableSymbol next;
+	private TraversableSymbol previous;
 	public TraversableSymbol(Symbol symbol) {
 		this.symbol = symbol;
 	}
@@ -14,18 +15,16 @@ public class TraversableSymbol implements Traverseable<TraversableSymbol> {
 	}
 	
 	public void setNext(TraversableSymbol next) {
-		// TODO Auto-generated method stub
+		this.next = next;
 		
 	}
 
 	public TraversableSymbol getNext() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.next;
 	}
 
 	public boolean hasNext() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.next != null;
 	}
 
 	public String toString(String delimter) {
@@ -34,18 +33,16 @@ public class TraversableSymbol implements Traverseable<TraversableSymbol> {
 	}
 
 	public void setPrevious(TraversableSymbol previous) {
-		// TODO Auto-generated method stub
+		this.previous = previous;
 		
 	}
 
 	public TraversableSymbol getPrevious() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.previous;
 	}
 
 	public boolean hasPrevious() {
-		// TODO Auto-generated method stub
-		return false;
+		return this.previous != null;
 	}
 
 }

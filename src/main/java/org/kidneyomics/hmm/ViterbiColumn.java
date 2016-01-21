@@ -23,15 +23,15 @@ class ViterbiColumn implements Traverseable<ViterbiColumn> {
 		this.isFirstColumn = isFirstColumn;
 	}
 	
-	public static ViterbiColumn createLastColumn(int columnNumber) {
+	static ViterbiColumn createLastColumn(int columnNumber) {
 		return new ViterbiColumn(columnNumber, null, true, false);
 	}
 	
-	public static ViterbiColumn createFirstColumn() {
+	static ViterbiColumn createFirstColumn() {
 		return new ViterbiColumn(-1, null, false, true);
 	}
 	
-	public static ViterbiColumn createInteriorColumn(int columnNumber, Symbol symbol) {
+	static ViterbiColumn createInteriorColumn(int columnNumber, Symbol symbol) {
 		return new ViterbiColumn(columnNumber, symbol, false, false);
 	}
 	

@@ -15,13 +15,8 @@ public class State {
 		END
 	}
 	
-	public enum VISIT_LEVEL {
-		NOT_VISITED,
-		VISITED,
-		CLOSED
-	}
 	
-	private VISIT_LEVEL visitLevel = VISIT_LEVEL.NOT_VISITED;
+	private VisitLevel visitLevel = VisitLevel.NOT_VISITED;
 	
 	private State(String name, STATE_TYPE stateType) {
 		this.stateType = stateType;
@@ -97,11 +92,11 @@ public class State {
 		return this.emissions;
 	}
 	
-	public VISIT_LEVEL getVisitLevel() {
+	public VisitLevel getVisitLevel() {
 		return visitLevel;
 	}
 
-	public void setVisitLevel(VISIT_LEVEL visitLevel) {
+	public void setVisitLevel(VisitLevel visitLevel) {
 		this.visitLevel = visitLevel;
 	}
 	

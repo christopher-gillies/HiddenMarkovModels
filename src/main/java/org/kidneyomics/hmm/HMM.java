@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import org.kidneyomics.hmm.State.VISIT_LEVEL;
-
 public class HMM {
 	
 	private final State startState;
@@ -165,7 +163,7 @@ public class HMM {
 	private void discoverStatesAndSymbols(State state) {
 		Queue<State> queue = new LinkedList<State>();
 		
-		state.setVisitLevel(VISIT_LEVEL.VISITED);
+		state.setVisitLevel(VisitLevel.VISITED);
 		queue.add(state);
 		
 		while(queue.peek() != null) {
@@ -209,17 +207,17 @@ public class HMM {
 			}
 			
 			//add states to the queue if this node is not already closed
-			if(next.getVisitLevel() != VISIT_LEVEL.CLOSED) {
+			if(next.getVisitLevel() != VisitLevel.CLOSED) {
 				for(State s : next.getTransitions().getKeys()) {
-					if(s.getVisitLevel() == VISIT_LEVEL.NOT_VISITED) {
-						s.setVisitLevel(VISIT_LEVEL.VISITED);
+					if(s.getVisitLevel() == VisitLevel.NOT_VISITED) {
+						s.setVisitLevel(VisitLevel.VISITED);
 						queue.add(s);
 					}
 				}
 			}
 			
 			//close this state b/c all reachable nodes have been added to the queue
-			next.setVisitLevel(VISIT_LEVEL.CLOSED);
+			next.setVisitLevel(VisitLevel.CLOSED);
 		}
 		
 	}
