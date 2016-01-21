@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 
-class ViterbiGraph {
+public class ViterbiGraph {
 	//TODO: create print function
 	
 	private final HMM hmm;
