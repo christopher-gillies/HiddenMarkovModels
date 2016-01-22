@@ -163,7 +163,6 @@ public class ViterbiGraphTest {
 	
 	@Test
 	public void testBuildViterbiGraph2() {
-		//TODO: finish test
 		Symbol heads = Symbol.createSymbol("H");
 		Symbol tails = Symbol.createSymbol("T");
 		
@@ -209,6 +208,7 @@ public class ViterbiGraphTest {
 		
 		//check first column
 		ViterbiColumn first = graph.getColumns().getFirst();
+		assertEquals(-1,first.getColumnNumber());
 		
 		assertEquals(null,first.getSymbol());
 		assertEquals(2,first.getNodes().size());
@@ -222,14 +222,15 @@ public class ViterbiGraphTest {
 		assertNotNull(v0);
 		assertNotNull(v1);
 		
-		ViterbiColumn second = first.getNext();
 		
+		//check second column
+		ViterbiColumn second = first.getNext();
+		assertEquals(0,second.getColumnNumber());
+		
+		assertEquals(heads,second.getSymbol());
 		assertEquals(2,second.getNodes().size());
 		
 		ViterbiNode v2 = second.getNode(fair);
-		//System.err.println( v2.getNextNodes().get(0).getState());
-		//System.err.println( v2.getNextNodes().get(0).getColumn().getColumnNumber());
-		
 		ViterbiNode v3 = second.getNode(silent);
 		
 		//
@@ -244,8 +245,44 @@ public class ViterbiGraphTest {
 		assertEquals(2,v2.getNextNodes().size());
 		assertEquals(1,v3.getNextNodes().size());
 		
+		assertTrue(v2.getNextNodes().contains(v3));
+		
+		//check third column
+		ViterbiColumn third = second.getNext();
+		assertEquals(1,third.getColumnNumber());
+		assertEquals(heads,third.getSymbol());
+		assertEquals(2,third.getNodes().size());
+		
+		ViterbiNode v4 = third.getNode(fair);
+		ViterbiNode v5 = third.getNode(silent);
+		assertEquals(2,v4.getPreviousNodes().size());
+		assertEquals(1,v5.getPreviousNodes().size());
+		
+		assertTrue(v4.getPreviousNodes().contains(v2));
+		assertTrue(v4.getPreviousNodes().contains(v3));
+		
+		assertTrue(v2.getNextNodes().contains(v4));
+		
+		assertTrue(v5.getPreviousNodes().contains(v4));
+		assertTrue(v3.getNextNodes().contains(v4));
 		
 		
+		//check final column
+		ViterbiColumn forth = third.getNext();
+		
+		assertEquals(2,forth.getColumnNumber());
+		
+		assertEquals(null,forth.getSymbol());
+		assertEquals(1,forth.getNodes().size());
+		ViterbiNode finalNode = forth.getNode(hmm.getEndState());
+		assertNotNull(finalNode);
+		
+		//note this allows a sequence to end in the silent state.... should this be allowed?
+		assertEquals(2,finalNode.getPreviousNodes().size());
+		assertTrue(finalNode.getPreviousNodes().contains(v4));
+		assertTrue(finalNode.getPreviousNodes().contains(v5));
+		
+		assertEquals(0,finalNode.getNextNodes().size());
 		
 	}
 }
