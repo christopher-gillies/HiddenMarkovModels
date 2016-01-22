@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-public class HMM {
+public class HMM implements Validatable {
 	
 	private final State startState;
 	private final State endState;
@@ -240,6 +240,19 @@ public class HMM {
 	
 	public Collection<State> getStates() {
 		return this.states.values();
+	}
+
+
+	public boolean isValid() {
+		boolean res = true;
+		res = res && this.endState.isValid();
+		res = res && this.startState.isValid();
+		
+		for(State s : this.states.values()) {
+			res = res && s.isValid();
+		}
+		
+		return res;
 	}
 	
 }

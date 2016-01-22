@@ -90,7 +90,7 @@ public class ViterbiGraph {
 			ViterbiNode current = queue.poll();
 			current.setVisitLevel(VisitLevel.CLOSED);
 			
-			Collection<State> nextStates = startNode.getState().getTransitions().getKeys();
+			Collection<State> nextStates = current.getState().getTransitions().getKeys();
 			for(State nextState : nextStates) {
 				
 				
@@ -120,7 +120,7 @@ public class ViterbiGraph {
 				}
 				
 				//set backward edge to this node
-				node.getPreviousNodes().add(startNode);
+				node.getPreviousNodes().add(current);
 				//set forward edge from this node to next node;
 				current.getNextNodes().add(node);
 			}

@@ -41,8 +41,21 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	}
 	
 	public void setProbability(T t, double value) {
+		
+		if(value < 0 || value > 1) {
+			throw new IllegalArgumentException("value must be >=  0 and <= 1");
+		}
+		
 		if(!immutable) {
-			this.probs.put(t, value);
+			
+			//only add if the value is greater than 0
+			if(value == 0.0) {
+				if(this.probs.containsKey(t)) {
+					this.probs.remove(t);
+				}
+			} else {
+				this.probs.put(t, value);
+			}
 		}
 	}
 	

@@ -1,6 +1,6 @@
 package org.kidneyomics.hmm;
 
-public class State {
+public class State implements Validatable {
 	
 	private static RandomNumberService randomService = new DefaultRandomNumberSerivce();
 	
@@ -107,6 +107,15 @@ public class State {
 	@Override
 	public String toString() {
 		return this.name;
+	}
+
+	public boolean isValid() {
+		//do not allow a silent state to transition to itself
+		if(this.isSilentState() && this.getTransitions().getProbability(this) != 0.0) {
+			return false;
+		}
+		
+		return this.getEmissions().isValid() && this.getTransitions().isValid();
 	}
 	
 }
