@@ -4,6 +4,7 @@ import java.util.Set;
 
 public interface ProbabilityMap<T> {
 	double getProbability(T t);
+	double getLogProbability(T t);
 	void setProbability(T t, double prob);
 	void remove(T t);
 	Set<T> getKeys(); 

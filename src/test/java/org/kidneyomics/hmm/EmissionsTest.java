@@ -78,4 +78,10 @@ public class EmissionsTest {
 		assertTrue( Math.abs(s3Count - 40000) < 1000 );
 		
 	}
+	
+	//TODO: implement this test, should test contains, add, remove, set 0
+	@Test
+	public void testThatLogProbsAndProbsMatch() {
+		
+	}
 }
