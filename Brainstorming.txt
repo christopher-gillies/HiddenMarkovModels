@@ -13,3 +13,10 @@ hidden markov model
 *Question 1: Given a model and probability of being in each state, what is the probability that the next symbol is b?
 P( x_{t+1} = b ) = \sum_{s \in States} { P(\pi_{t}  = s) P(x_{t+1} = b | \pi_{t} = s) }
 *Question 2: Compute the accuracy of guessing the symbol across a large sequence. Is the method accurate?
+
+
+For lotto:
+
+(1) implement fair biased coin model and check and see if we can correctly esitmate the parameters of this model
+(2) How many training examples do we need to correctly fit the model?
+(3) How many previous days to we need to accurately predict the state on the day before we play?
