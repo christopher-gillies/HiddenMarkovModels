@@ -125,7 +125,7 @@ public class HMM implements Validatable {
 		
 		//compute transition probability into first state
 		State firstSate = sequence.getFirst().getState();
-		double startProb = Math.log(this.startState.getTransitions().getProbability(firstSate));
+		double startProb = this.startState.getTransitions().getLogProbability(firstSate);
 		res = startProb;
 
 		//compute the emission probability for the state
@@ -137,13 +137,13 @@ public class HMM implements Validatable {
 			//if symbol is null then this is a null state 
 			// that is there are no emissions so do not calculate the prob of emitting a symbol
 			if(symbol != null) {
-				double emitProb = Math.log(state.getEmissions().getProbability(symbol));
+				double emitProb = state.getEmissions().getLogProbability(symbol);
 				res = res + emitProb;
 			}
 			
 			if(pair.getNext() != null) {
 				State nextState = pair.getNext().getState();
-				double transitionProb = Math.log(state.getTransitions().getProbability(nextState));
+				double transitionProb = state.getTransitions().getLogProbability(nextState);
 				res = res + transitionProb;
 			}
 		}
