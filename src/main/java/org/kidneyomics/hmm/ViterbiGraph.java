@@ -2,6 +2,7 @@ package org.kidneyomics.hmm;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 
 
@@ -22,6 +23,7 @@ public class ViterbiGraph {
 		this.emittedSymbols = emittedSymbols;
 		buildViterbiGraph();
 	}
+	
 	
 	public HMM getHmm() {
 		return hmm;

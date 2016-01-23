@@ -2,7 +2,9 @@ package org.kidneyomics.hmm;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -42,6 +44,67 @@ public class HMM implements Validatable {
 			throw new IllegalArgumentException("Please input a start state");
 		}
 		return new HMM(startState);
+	}
+	
+	
+	/**
+	 * 
+	 * @param symbols - the symbols to decode
+	 * @return the most likely state symbol sequence
+	 * Perform viterbi algorithm
+	 * we want max p(pi | x) 
+	 * p( pi | x) = p(pi,x) / p(x) 
+	 * but this would require calculating p(x)
+	 * however we can maximize p(pi,x) which is equivalent to maxizing p(pi | x)
+	 * since p(x) in denominator is constant for all pi  p(pi,x) / p(x) 
+	 * argmax_pi (  p(pi,x) )
+	 */
+	public TraversableOrderedSet<StateSymbolPair> decode(List<Symbol> symbols) {
+		/*
+		 * create traversable ordered set
+		 */
+		TraversableOrderedSet<TraversableSymbol> emittedSymbols = new TraversableOrderedSet<TraversableSymbol>();
+		
+		for(Symbol symbol : symbols) {
+			emittedSymbols.add(new TraversableSymbol(symbol));
+		}
+		
+		/*
+		 * Initialization
+		 */
+		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);
+		
+		TraversableOrderedSet<ViterbiColumn> columns = graph.getColumns();
+		Iterator<ViterbiColumn> iter = columns.iterator();
+		
+		//first
+		ViterbiColumn first = iter.next();
+		ViterbiNode startNode = first.getNode(this.startState);
+		//on log scale so we need to set this to 0 b/c log(1) = 0
+		startNode.setViterbi(0);
+		startNode.setFinishedViterbi(true);
+		
+		
+		//others
+		while(iter.hasNext()) {
+			ViterbiColumn next = iter.next();
+			for(ViterbiNode node : next.getNodes()) {
+				// log(0) = -Inf
+				node.setViterbi(Double.NEGATIVE_INFINITY);
+			}
+		}
+		
+		/*
+		 * Recursion
+		 */
+		
+		//recreate iterator
+		iter = columns.iterator();
+		while(iter.hasNext()) {
+			
+		}
+		
+		return null;
 	}
 	
 	public State getEndState() {
