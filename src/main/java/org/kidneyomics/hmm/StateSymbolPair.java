@@ -68,6 +68,14 @@ public class StateSymbolPair implements Cloneable, Traverseable<StateSymbolPair>
 		return seqSb.toString();
 	}
 
+	void setState(State state) {
+		this.state = state;
+	}
+	
+	void setSymbol(Symbol symbol) {
+		this.symbol = symbol;
+	}
+	
 	public void setPrevious(StateSymbolPair previous) {
 		this.previous = previous;
 	}

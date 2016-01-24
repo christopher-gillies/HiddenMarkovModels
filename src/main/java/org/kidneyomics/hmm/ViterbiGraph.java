@@ -12,7 +12,8 @@ public class ViterbiGraph {
 	private final HMM hmm;
 	private final TraversableOrderedSet<TraversableSymbol> emittedSymbols;
 	private final TraversableOrderedSet<ViterbiColumn> columns;
-	//columns
+	private ViterbiNode startNode = null;
+	private ViterbiNode endNode = null;
 	
 	
 	
@@ -25,6 +26,31 @@ public class ViterbiGraph {
 	}
 	
 	
+	
+	public ViterbiNode getStartNode() {
+		return startNode;
+	}
+
+
+
+	public void setStartNode(ViterbiNode startNode) {
+		this.startNode = startNode;
+	}
+
+
+
+	public ViterbiNode getEndNode() {
+		return endNode;
+	}
+
+
+
+	public void setEndNode(ViterbiNode endNode) {
+		this.endNode = endNode;
+	}
+
+
+
 	public HMM getHmm() {
 		return hmm;
 	}
@@ -53,6 +79,9 @@ public class ViterbiGraph {
 		first.addNode(startNode);
 		this.columns.add(first);
 		
+		//set start node
+		this.startNode = startNode;
+		
 		//create interior columns
 		int i = 0;
 		for(TraversableSymbol symbol : emittedSymbols) {
@@ -66,6 +95,9 @@ public class ViterbiGraph {
 		ViterbiNode endNode = ViterbiNode.createViterbiNodeFromState(endState);
 		last.addNode(endNode);
 		this.columns.add(last);
+		
+		//set end node
+		this.endNode = endNode;
 		
 		//set all other transitions
 		setTransitions(startNode);

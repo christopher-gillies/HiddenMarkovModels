@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -234,5 +236,146 @@ public class HMMTest {
 		
 		assertEquals(0.5 * Math.pow(0.9,5),max,0.0001);
 	}
+	
+	@Test
+	public void testDecode1() {
+		HMM hmm = createBiasedCoinHMM();
+		
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		LinkedList<Symbol> seq = new LinkedList<Symbol>();
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		TraversableOrderedSet<StateSymbolPair> bestSeq = hmm.decode(seq);
+		double prob = hmm.calculateJointProbabilityOfSequencesAndStates(bestSeq, false);
+		
+		System.err.println("BestSeq: " + bestSeq.toString());
+		System.err.println("BestProb: " + prob);
+		
+		//check sizes match
+		assertEquals(seq.size(), bestSeq.size());
+		
+		Iterator<Symbol> seqIter = seq.iterator();
+		Iterator<StateSymbolPair> bestIter = bestSeq.iterator();
+		
+		//check symbols match
+		while(seqIter.hasNext()) {
+			Symbol nextSym = seqIter.next();
+			StateSymbolPair nextPair = bestIter.next();
+			assertEquals(nextSym,nextPair.getEmittedSymbol());
+		}
+		
+		//check that is max
+		
+		//create first seq
+		Iterator<Symbol> iter = seq.iterator();
+		TraversableOrderedSet<StateSymbolPair> seqToComp = new TraversableOrderedSet<StateSymbolPair>();
+		while(iter.hasNext()) {
+			Symbol current = iter.next();
+			StateSymbolPair pair = new StateSymbolPair(fair, current);
+			seqToComp.add(pair);
+		}
+		
+		//TODO: validate that this has the max probability
+		
+	}
+	
+	//flawed implementation
+//	@Test
+//	public void testGrayCodes() {
+//		TraversableOrderedSet<StateSymbolPair> seqToComp = new TraversableOrderedSet<StateSymbolPair>();
+//		HMM hmm = createBiasedCoinHMM();
+//		
+//		Symbol heads = hmm.getSymbolByName("H");
+//		Symbol tails = hmm.getSymbolByName("T");
+//		State fair = hmm.getStateByName("F");
+//		State biased = hmm.getStateByName("B");
+//		
+//		StateSymbolPair pair1 = new StateSymbolPair(fair, heads);
+//		StateSymbolPair pair2 = new StateSymbolPair(fair, heads);
+//		StateSymbolPair pair3 = new StateSymbolPair(fair, heads);
+//		StateSymbolPair pair4 = new StateSymbolPair(fair, heads);
+//		seqToComp.add(pair1);
+//		seqToComp.add(pair2);
+//		seqToComp.add(pair3);
+//		seqToComp.add(pair4);
+//		
+//		int count = 1;
+//		System.err.println("GRAY CODES");
+//		System.err.println(seqToComp.toString());
+//		while(!isLastGrayCode(seqToComp,fair,biased)) {
+//			createNextGrayCode(seqToComp, fair, biased);
+//			System.err.println(seqToComp.toString());
+//			count++;
+//		}
+//		assertEquals(16,count);
+//	}
+//	
+//	private boolean isLastGrayCode(TraversableOrderedSet<StateSymbolPair> seqToComp,State fair, State biased) {
+//		Iterator<StateSymbolPair> iter = seqToComp.iterator();
+//		while(iter.hasNext()) {
+//			StateSymbolPair current = iter.next();
+//			State state = current.getState();
+//			if(state == fair) {
+//				return false;
+//			}
+//		}
+//		
+//		return true;
+//	}
+//	
+//	private void createNextGrayCode(TraversableOrderedSet<StateSymbolPair> seqToComp, State fair, State biased) {
+//		/*
+//		 * 0000
+//		 * 0100
+//		 * 0010
+//		 * 0001
+//		 * 1001
+//		 * 0101
+//		 */
+//		boolean swapped = false;
+//		Iterator<StateSymbolPair> iter = seqToComp.iterator();
+//		while(iter.hasNext()) {
+//			StateSymbolPair current = iter.next();
+//			StateSymbolPair next = current.getNext();
+//			
+//			if(current.getState() == biased && next == null) {
+//				swapped = false;
+//				break;
+//			} else if(current.getState() == fair && next == null) {
+//				swapped = false;
+//			} else if(current.getState() == biased && next.getState() == fair) {
+//				//next state is fair
+//				//current state is biased
+//				//move biased state forward
+//				current.setState(fair);
+//				next.setState(biased);
+//				swapped = true;
+//				break;
+//			}
+//			
+//		}
+//		
+//		if(swapped == false) {
+//			seqToComp.getFirst().setState(biased);
+//		}
+//		
+//		
+//	}
 	
 }

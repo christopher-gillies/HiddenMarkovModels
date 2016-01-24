@@ -101,10 +101,46 @@ public class HMM implements Validatable {
 		//recreate iterator
 		iter = columns.iterator();
 		while(iter.hasNext()) {
-			
+			ViterbiColumn next = iter.next();
+			for(ViterbiNode node : next.getNodes()) {
+				if(!node.isFinishedViterbi()) {
+					node.calculateViterbi();
+				}
+			}
 		}
 		
-		return null;
+		/*
+		 * Termination built into calculateViterbi 
+		 */
+		
+		/*
+		 * Traceback
+		 */
+		LinkedList<StateSymbolPair> tmpResult = new LinkedList<StateSymbolPair>();
+		ViterbiNode current = graph.getEndNode();
+		while(current != null) {
+			State state = current.getState();
+			Symbol symbol = null;
+			//only add to result if it is not a start state or not end state
+			if(state.isInteriorState()){
+				
+				//if it is a silent state do not add the symbol associated with the column
+				if(!state.isSilentState()) {
+					symbol = current.getColumn().getSymbol();
+				}
+				StateSymbolPair pair = new StateSymbolPair(state, symbol);
+				// add at the beginning of the list to ensure the correct order
+				// because we are starting from the last column
+				tmpResult.addFirst(pair);
+			}
+			//got to previous
+			current = current.getViterbiBackPointer();
+		}
+		
+		TraversableOrderedSet<StateSymbolPair> result = new TraversableOrderedSet<StateSymbolPair>();
+		result.addAll(tmpResult);
+		
+		return result;
 	}
 	
 	public State getEndState() {

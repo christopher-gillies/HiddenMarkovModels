@@ -20,7 +20,7 @@ class ViterbiNode {
 	private boolean backwardFinished = false;
 	private boolean isFinishedViterbi = false;
 	
-	private ViterbiNode pointer = null;
+	private ViterbiNode viterbiBackPointer = null;
 	
 	private ViterbiNode(State state) {
 		this.state = state;
@@ -119,12 +119,12 @@ class ViterbiNode {
 		this.isFinishedViterbi = isFinishedViterbi;
 	}
 
-	public ViterbiNode getPointer() {
-		return pointer;
+	public ViterbiNode getViterbiBackPointer() {
+		return viterbiBackPointer;
 	}
 
-	public void setPointer(ViterbiNode pointer) {
-		this.pointer = pointer;
+	public void setViterbiBackPointer(ViterbiNode pointer) {
+		this.viterbiBackPointer = pointer;
 	}
 
 	
@@ -144,25 +144,48 @@ class ViterbiNode {
 		double logMax = Double.NEGATIVE_INFINITY;
 		ViterbiNode maxPointer = null;
 		
-		for(ViterbiNode previous : this.getPreviousNodes()) {
-			//if the node is not finished calculate the viterbi value
-			if(!previous.isFinishedViterbi()) {
-				previous.calculateViterbi();
+		if(state.isEndState()) {
+			//if this is the end state, then there will be no transition
+			//probability or emitted symbol
+			for(ViterbiNode previous : this.getPreviousNodes()) {
+				//if the node is not finished calculate the viterbi value
+				if(!previous.isFinishedViterbi()) {
+					previous.calculateViterbi();
+				}
+			
+				double logPreViterbi = previous.getViterbi();
+				if(logPreViterbi > logMax) {
+					logMax = logPreViterbi;
+					maxPointer = previous;
+				}
 			}
 			
-			double logPreViterbi = previous.getViterbi();
-			double logTransitionProb = previous.getState().getTransitions().getLogProbability(state);
-			double logSum = logPreViterbi + logTransitionProb;
-			if(logSum > logMax) {
-				logMax = logSum;
-				maxPointer = previous;
+			//set max values
+			this.viterbi = logMax;
+			this.viterbiBackPointer = maxPointer;
+			
+		} else {
+			for(ViterbiNode previous : this.getPreviousNodes()) {
+				//if the node is not finished calculate the viterbi value
+				if(!previous.isFinishedViterbi()) {
+					previous.calculateViterbi();
+				}
+				
+				double logPreViterbi = previous.getViterbi();
+				double logTransitionProb = previous.getState().getTransitions().getLogProbability(state);
+				double logSum = logPreViterbi + logTransitionProb;
+				if(logSum > logMax) {
+					logMax = logSum;
+					maxPointer = previous;
+				}
 			}
+			
+			//set max values
+			double log_emission = state.getEmissions().getLogProbability(symbol);
+			this.viterbi = log_emission + logMax;
+			this.viterbiBackPointer = maxPointer;
 		}
-		
-		//set max values
-		double log_emission = state.getEmissions().getLogProbability(symbol);
-		this.viterbi = log_emission + logMax;
-		this.pointer = maxPointer;
+				
 		
 		//set finished
 		this.isFinishedViterbi = true;
