@@ -140,7 +140,8 @@ class ViterbiNode {
 		Symbol symbol = this.getColumn().getSymbol();
 		State state = this.getState();
 		
-		double logMax = Double.MIN_VALUE;
+		//Double.MIN_VALUE is not the smallest negative value but the smallest
+		double logMax = Double.NEGATIVE_INFINITY;
 		ViterbiNode maxPointer = null;
 		
 		for(ViterbiNode previous : this.getPreviousNodes()) {
