@@ -91,6 +91,7 @@ public class HMM implements Validatable {
 			for(ViterbiNode node : next.getNodes()) {
 				// log(0) = -Inf
 				node.setViterbi(Double.NEGATIVE_INFINITY);
+				node.setFinishedViterbi(false);
 			}
 		}
 		
