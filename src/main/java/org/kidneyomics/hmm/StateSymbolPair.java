@@ -1,6 +1,7 @@
 package org.kidneyomics.hmm;
 
 import java.util.Iterator;
+import java.util.List;
 
 public class StateSymbolPair implements Cloneable, Traverseable<StateSymbolPair> {
 	private State state;
@@ -86,6 +87,25 @@ public class StateSymbolPair implements Cloneable, Traverseable<StateSymbolPair>
 
 	public boolean hasPrevious() {
 		return this.previous != null;
+	}
+	
+	public static TraversableOrderedSet<StateSymbolPair> createFromListOfSymbolsAndStates(List<Symbol> symbols, List<State> states) {
+		if(symbols.size() != states.size()) {
+			throw new IllegalArgumentException("Symbols and states must be the same size");
+		}
+		
+		TraversableOrderedSet<StateSymbolPair> pairs = new TraversableOrderedSet<StateSymbolPair>();
+		Iterator<Symbol> symIter = symbols.iterator();
+		Iterator<State> stateIter = states.iterator();
+		while(symIter.hasNext()) {
+			Symbol nextSym = symIter.next();
+			State nextState = stateIter.next();
+			StateSymbolPair pair = new StateSymbolPair(nextState, nextSym);
+			pairs.add(pair);
+		}
+		
+		return pairs;
+		
 	}
 	
 }
