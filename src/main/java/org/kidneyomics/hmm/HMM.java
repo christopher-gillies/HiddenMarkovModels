@@ -60,6 +60,7 @@ public class HMM implements Validatable {
 	 * argmax_pi (  p(pi,x) )
 	 */
 	public TraversableOrderedSet<StateSymbolPair> decode(List<Symbol> symbols) {
+		//consider moving this to ViterbiGraph
 		/*
 		 * create traversable ordered set
 		 */
@@ -142,6 +143,32 @@ public class HMM implements Validatable {
 		result.addAll(tmpResult);
 		
 		return result;
+	}
+	
+	/*
+	 * Evaluation
+	 * calculate the probability of x given the model
+	 * log likeihood of x
+	 */
+	
+	public double evaluate(List<Symbol> symbols, boolean log) {
+		//consider moving this to ViterbiGraph
+		/*
+		 * create traversable ordered set
+		 */
+		TraversableOrderedSet<TraversableSymbol> emittedSymbols = new TraversableOrderedSet<TraversableSymbol>();
+		
+		for(Symbol symbol : symbols) {
+			emittedSymbols.add(new TraversableSymbol(symbol));
+		}
+		
+		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);
+		calcForward(graph);
+		return -1;
+	}
+	
+	private void calcForward(ViterbiGraph graph) {
+		
 	}
 	
 	public State getEndState() {
