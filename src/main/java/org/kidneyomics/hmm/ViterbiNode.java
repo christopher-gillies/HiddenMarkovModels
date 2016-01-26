@@ -1,5 +1,9 @@
 package org.kidneyomics.hmm;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -21,6 +25,8 @@ class ViterbiNode {
 	private boolean isFinishedViterbi = false;
 	
 	private ViterbiNode viterbiBackPointer = null;
+	
+	private static DoubleDescendingComparator comparator = new DoubleDescendingComparator();
 	
 	private ViterbiNode(State state) {
 		this.state = state;
@@ -196,7 +202,7 @@ class ViterbiNode {
 		 * find sum of all previous states k
 		 * f_l(i) = e_l(i) * sum_k ( f_k(i-1) a_kl  )
 		 * 
-		 *  on log scale f_l(i) = log(e_l(i) + log( sum_k (f_k(i-1) a_kl ))
+		 *  on log scale f_l(i) = log(e_l(i)) + log( sum_k (f_k(i-1) a_kl ))
 		 *  
 		 *   https://en.wikipedia.org/wiki/List_of_logarithmic_identities#Summation.2Fsubtraction
 		 *   
@@ -206,9 +212,46 @@ class ViterbiNode {
 		 *   
 		 *   log(f_k(i-1)a_kl) = log(f_k(i-1)) + log(a_kl)
 		 *  
+		 *   use computeLogOfSumLogs(List<Double> logs)
+		 *   
+		 *   make list of all f_k(i - 1)*a_kl = log(f_k(i-1)) + log(a_kl) ... call this list logs
+		 *   
+		 *   log(f_l) = log(e_l(i)) + computeLogOfSumLogs(List<Double> logs)
 		 */
 	}
 	
 	
+	static double computeLogOfSum(List<Double> vals) {
+		List<Double> logs = new ArrayList<Double>(vals.size());
+		for(Double val : vals) {
+			logs.add(Math.log(val));
+		}
+		
+		double res = computeLogOfSumLogs(logs);
+		return res;
+	}
 	
+	static double computeLogOfSumLogs(List<Double> logs) {
+		
+		// log sum (a_i) = log a_0 + log( 1 + sum( exp( log(a_i) - log(a_0)))
+		
+		/*
+		 * sort in descending order
+		 */
+		
+		Collections.sort(logs, comparator);
+		
+		Iterator<Double> iter = logs.iterator();
+		
+		double largest = iter.next();
+		double sum = 0;
+		while(iter.hasNext()) {
+			double next = iter.next();
+			sum = sum + Math.exp(next - largest);
+		}
+		
+		return largest + Math.log(1 + sum);
+		
+	}
+		
 }
