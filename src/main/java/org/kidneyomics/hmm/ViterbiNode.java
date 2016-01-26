@@ -194,11 +194,18 @@ class ViterbiNode {
 	void calculateForward() {
 		/*
 		 * find sum of all previous states k
-		 * f_l(i + 1) = e_l(i + 1) * sum_k ( a_kl v_k(i) )
+		 * f_l(i) = e_l(i) * sum_k ( f_k(i-1) a_kl  )
 		 * 
-		 *  on log scale f_l(i + 1) = log(e_l(i + 1) + log(sum_k (a_kl v_k(i)))
+		 *  on log scale f_l(i) = log(e_l(i) + log( sum_k (f_k(i-1) a_kl ))
 		 *  
-		 *   forward will be stored on log scale
+		 *   https://en.wikipedia.org/wiki/List_of_logarithmic_identities#Summation.2Fsubtraction
+		 *   
+		 *   log f_l(i)  = log(e_l(i + 1)) + log (fi(i-1)a_1l) + log(1 + sum_k=2 (  exp( log(f_k(i-1)a_kl) - log (f_i(i-1)a_1l)) )
+		 *   
+		 *   sort log(f_k(i-1)a_kl) in descending order (largest to smallest)
+		 *   
+		 *   log(f_k(i-1)a_kl) = log(f_k(i-1)) + log(a_kl)
+		 *  
 		 */
 	}
 	
