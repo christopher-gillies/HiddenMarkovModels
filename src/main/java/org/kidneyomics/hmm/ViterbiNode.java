@@ -191,6 +191,17 @@ class ViterbiNode {
 		this.isFinishedViterbi = true;
 	}
 	
+	void calculateForward() {
+		/*
+		 * find sum of all previous states k
+		 * f_l(i + 1) = e_l(i + 1) * sum_k ( a_kl v_k(i) )
+		 * 
+		 *  on log scale f_l(i + 1) = log(e_l(i + 1) + log(sum_k (a_kl v_k(i)))
+		 *  
+		 *   forward will be stored on log scale
+		 */
+	}
+	
 	
 	
 }

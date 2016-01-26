@@ -164,11 +164,53 @@ public class HMM implements Validatable {
 		
 		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);
 		calcForward(graph);
-		return -1;
+		if(log) {
+			return graph.getEndNode().getForward();
+		} else {
+			return Math.exp(graph.getEndNode().getForward());
+		}
 	}
 	
 	private void calcForward(ViterbiGraph graph) {
 		
+		/*
+		 * Initialization
+		 */
+		TraversableOrderedSet<ViterbiColumn> columns = graph.getColumns();
+		Iterator<ViterbiColumn> iter = columns.iterator();
+		
+		//first
+		ViterbiColumn first = iter.next();
+		ViterbiNode startNode = first.getNode(this.startState);
+		//on log scale so we need to set this to 0 b/c log(1) = 0
+		startNode.setForward(0);
+		startNode.setForwardFinished(true);
+		
+		
+		//others
+		while(iter.hasNext()) {
+			ViterbiColumn next = iter.next();
+			for(ViterbiNode node : next.getNodes()) {
+				// log(0) = -Inf
+				node.setViterbi(Double.NEGATIVE_INFINITY);
+				node.setForwardFinished(false);
+			}
+		}
+		
+		/*
+		 * Recursion
+		 */
+		
+		//recreate iterator
+		iter = columns.iterator();
+		while(iter.hasNext()) {
+			ViterbiColumn next = iter.next();
+			for(ViterbiNode node : next.getNodes()) {
+				if(!node.isFinishedViterbi()) {
+					node.calculateForward();
+				}
+			}
+		}
 	}
 	
 	public State getEndState() {
