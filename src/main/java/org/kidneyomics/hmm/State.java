@@ -8,6 +8,7 @@ public class State implements Validatable {
 	private final Transistions transitions;
 	private final String name;
 	private final STATE_TYPE stateType;
+	private boolean connectedEndState = false;
 	
 	public enum STATE_TYPE {
 		START,
@@ -16,6 +17,15 @@ public class State implements Validatable {
 	}
 	
 	
+	
+	boolean isConnectedEndState() {
+		return connectedEndState;
+	}
+
+	void setConnectedEndState(boolean connectedEndState) {
+		this.connectedEndState = connectedEndState;
+	}
+
 	private VisitLevel visitLevel = VisitLevel.NOT_VISITED;
 	
 	private State(String name, STATE_TYPE stateType) {

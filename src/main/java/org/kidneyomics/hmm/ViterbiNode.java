@@ -151,8 +151,8 @@ class ViterbiNode {
 		ViterbiNode maxPointer = null;
 		
 		if(state.isEndState()) {
-			//if this is the end state, then there will be no transition
-			//probability or emitted symbol
+			//there may be a transition if this is a connected end state
+			//there may be an emitted symbol
 			for(ViterbiNode previous : this.getPreviousNodes()) {
 				//if the node is not finished calculate the viterbi value
 				if(!previous.isFinishedViterbi()) {
@@ -160,15 +160,16 @@ class ViterbiNode {
 				}
 			
 				double logPreViterbi = previous.getViterbi();
-				if(logPreViterbi > logMax) {
-					logMax = logPreViterbi;
+				double logTransitionProb = 0;
+				if(state.isConnectedEndState()) {
+					logTransitionProb = previous.getState().getTransitions().getLogProbability(state);
+				}
+				double logSum = logPreViterbi + logTransitionProb;
+				if(logSum > logMax) {
+					logMax = logSum;
 					maxPointer = previous;
 				}
 			}
-			
-			//set max values
-			this.viterbi = logMax;
-			this.viterbiBackPointer = maxPointer;
 			
 		} else {
 			for(ViterbiNode previous : this.getPreviousNodes()) {
@@ -186,16 +187,17 @@ class ViterbiNode {
 				}
 			}
 			
-			//set max values
-			if(state.isSilentState()) {
-				//no emission
-				this.viterbi = logMax;
-			}
+		}
+			
+		//set max values
+		if(state.isSilentState()) {
+			//no emission
+			this.viterbi = logMax;
+		} else {
 			double log_emission = state.getEmissions().getLogProbability(symbol);
 			this.viterbi = log_emission + logMax;
-			this.viterbiBackPointer = maxPointer;
 		}
-				
+		this.viterbiBackPointer = maxPointer;
 		
 		//set finished
 		this.viterbiFinished = true;
@@ -224,9 +226,11 @@ class ViterbiNode {
 		 */
 		Symbol symbol = this.getColumn().getSymbol();
 		State state = this.getState();
+		double sum = 0;
 		if(state.isEndState()) {
-			//no transition or emitted symbol
 			
+			//there may be a transition if this is a connected end state
+			//there may be an emitted symbol
 			List<Double> logFPrevAkl = new LinkedList<Double>();
 			
 			for(ViterbiNode previous : this.getPreviousNodes()) {
@@ -236,11 +240,16 @@ class ViterbiNode {
 				}
 				
 				double logPreForward = previous.getForward();
-				double logProd = logPreForward;
+				double logTransition = 0;
+				if(state.isConnectedEndState()) {
+					logTransition = previous.getState().getTransitions().getLogProbability(state);
+				}
+				double logProd = logPreForward + logTransition;
 				logFPrevAkl.add(logProd);
 			}
 			
-			this.forward = computeLogOfSumLogs(logFPrevAkl);
+			sum = computeLogOfSumLogs(logFPrevAkl);
+
 			
 		} else {
 			List<Double> logFPrevAkl = new LinkedList<Double>();
@@ -257,14 +266,16 @@ class ViterbiNode {
 				logFPrevAkl.add(logProd);
 			}
 			
-			double sum = computeLogOfSumLogs(logFPrevAkl);
-			if(this.isSilentState()) {
-				this.forward = sum;
-			} else {
-				double logEmission = state.getEmissions().getLogProbability(symbol);
-				this.forward = logEmission + sum;
-			}
+			sum = computeLogOfSumLogs(logFPrevAkl);
 		}
+	
+		if(this.isSilentState()) {
+			this.forward = sum;
+		} else {
+			double logEmission = state.getEmissions().getLogProbability(symbol);
+			this.forward = logEmission + sum;
+		}
+		
 		this.forwardFinished = true;
 	}
 	

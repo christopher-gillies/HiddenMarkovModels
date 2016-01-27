@@ -30,10 +30,15 @@ public class HMM implements Validatable {
 				break;
 			}
 		}
+		
 		if(endStateTmp == null) {
 			this.endState = State.createEndState();
 		} else {
 			this.endState = endStateTmp;
+			//if we get here then we know that the end state is connected by some previous state
+			//the challenge is what state is connected to the end state?
+			//this is needed for the viterbi graph construction
+			this.endState.setConnectedEndState(true);
 			this.states.remove(endState.getName());
 		}
 	}

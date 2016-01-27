@@ -105,11 +105,30 @@ public class ViterbiGraph {
 		//set transitions into last column
 		//getting previous column would be really useful here
 		ViterbiColumn previous = endNode.getColumn().getPrevious();
-		for(ViterbiNode node : previous.getNodes()) {
-			//add forward edge from previous node to end node
-			node.getNextNodes().add(endNode);
-			//add backward edge from this node to previous node
-			endNode.getPreviousNodes().add(node);
+		
+		//two cases, (1) a connected end state, or a disconnected end state
+		//for connected end state only make edges from states that have connection to the end state
+		//for unconnected any state could possibly transition to the end state
+		
+		if(endState.isConnectedEndState()) {
+			for(ViterbiNode node : previous.getNodes()) {
+				
+				//if there is a non-zero transition probability to end state then add a connection
+				if(node.getState().getTransitions().getProbability(endState) > 0.0) {
+					//add forward edge from previous node to end node
+					node.getNextNodes().add(endNode);
+					//add backward edge from this node to previous node
+					endNode.getPreviousNodes().add(node);
+				}
+			}
+			
+		} else {	
+			for(ViterbiNode node : previous.getNodes()) {
+				//add forward edge from previous node to end node
+				node.getNextNodes().add(endNode);
+				//add backward edge from this node to previous node
+				endNode.getPreviousNodes().add(node);
+			}
 		}
 		
 	}

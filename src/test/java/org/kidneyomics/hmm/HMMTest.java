@@ -354,5 +354,33 @@ public class HMMTest {
 		assertEquals(sumOfProbs,prob,0.00001);
 		
 	}
+	
+	@Test
+	public void testEvaluate2() {
+		HMM hmm = createBiasedCoinHMM();
+		
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		Set<Symbol> symbols = new HashSet<Symbol>();
+		symbols.add(heads);
+		symbols.add(tails);
+		Enumerator<Symbol> enumerator = Enumerator.getEnumeratorForSymbolsAndLength(symbols, 14);
+		Iterator<List<Symbol>> iter = enumerator.iterator();
+		
+		double sumOfProbs = 0;
+		int count = 0;
+		while(iter.hasNext()) {
+			List<Symbol> seq = iter.next();
+			double prob = hmm.evaluate(seq, false);
+			sumOfProbs += prob;
+			count++;
+		}
+		
+		assertEquals(16384,count);
+		assertEquals(1.0,sumOfProbs,0.00001);
+	}
 
+	//TODO: add more tests for connected end state hmm
 }
