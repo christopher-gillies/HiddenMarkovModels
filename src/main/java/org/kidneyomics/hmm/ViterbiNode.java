@@ -22,7 +22,7 @@ class ViterbiNode {
 	
 	private boolean forwardFinished = false;
 	private boolean backwardFinished = false;
-	private boolean isFinishedViterbi = false;
+	private boolean viterbiFinished = false;
 	
 	private ViterbiNode viterbiBackPointer = null;
 	
@@ -118,11 +118,11 @@ class ViterbiNode {
 	}
 
 	public boolean isFinishedViterbi() {
-		return isFinishedViterbi;
+		return viterbiFinished;
 	}
 
 	public void setFinishedViterbi(boolean isFinishedViterbi) {
-		this.isFinishedViterbi = isFinishedViterbi;
+		this.viterbiFinished = isFinishedViterbi;
 	}
 
 	public ViterbiNode getViterbiBackPointer() {
@@ -187,6 +187,10 @@ class ViterbiNode {
 			}
 			
 			//set max values
+			if(state.isSilentState()) {
+				//no emission
+				this.viterbi = logMax;
+			}
 			double log_emission = state.getEmissions().getLogProbability(symbol);
 			this.viterbi = log_emission + logMax;
 			this.viterbiBackPointer = maxPointer;
@@ -194,7 +198,7 @@ class ViterbiNode {
 				
 		
 		//set finished
-		this.isFinishedViterbi = true;
+		this.viterbiFinished = true;
 	}
 	
 	void calculateForward() {
@@ -218,6 +222,50 @@ class ViterbiNode {
 		 *   
 		 *   log(f_l) = log(e_l(i)) + computeLogOfSumLogs(List<Double> logs)
 		 */
+		Symbol symbol = this.getColumn().getSymbol();
+		State state = this.getState();
+		if(state.isEndState()) {
+			//no transition or emitted symbol
+			
+			List<Double> logFPrevAkl = new LinkedList<Double>();
+			
+			for(ViterbiNode previous : this.getPreviousNodes()) {
+				//if the node is not finished calculate the forward value
+				if(!previous.isForwardFinished()) {
+					previous.calculateForward();
+				}
+				
+				double logPreForward = previous.getForward();
+				double logProd = logPreForward;
+				logFPrevAkl.add(logProd);
+			}
+			
+			this.forward = computeLogOfSumLogs(logFPrevAkl);
+			
+		} else {
+			List<Double> logFPrevAkl = new LinkedList<Double>();
+			
+			for(ViterbiNode previous : this.getPreviousNodes()) {
+				//if the node is not finished calculate the forward value
+				if(!previous.isForwardFinished()) {
+					previous.calculateForward();
+				}
+				
+				double logPreForward = previous.getForward();
+				double logTransition = previous.getState().getTransitions().getLogProbability(state);
+				double logProd = logPreForward + logTransition;
+				logFPrevAkl.add(logProd);
+			}
+			
+			double sum = computeLogOfSumLogs(logFPrevAkl);
+			if(this.isSilentState()) {
+				this.forward = sum;
+			} else {
+				double logEmission = state.getEmissions().getLogProbability(symbol);
+				this.forward = logEmission + sum;
+			}
+		}
+		this.forwardFinished = true;
 	}
 	
 	

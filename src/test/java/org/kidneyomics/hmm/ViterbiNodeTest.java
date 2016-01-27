@@ -109,5 +109,73 @@ public class ViterbiNodeTest {
 		assertEquals(0.5, Math.exp(node1.getViterbi()),0.0001);
 		
 	}
+	
+	@Test
+	public void testForward() {
+		
+		State s1 = State.createState("S1");
+		State s2 = State.createState("S2");
+		State s3 = State.createState("S3");
+		
+		s2.getTransitions().setProbability(s1, 0.5);
+		s3.getTransitions().setProbability(s1, 0.5);
+		
+		Symbol s = Symbol.createSymbol("X");
+		s1.getEmissions().setProbability(s, 0.5);
+		
+		ViterbiColumn column = ViterbiColumn.createInteriorColumn(0, s);
+		ViterbiNode node1 = ViterbiNode.createViterbiNodeFromState(s1);
+		ViterbiNode node2 = ViterbiNode.createViterbiNodeFromState(s2);
+		//log 0.5
+		node2.setForward(-0.6931472);
+		node2.setForwardFinished(true);;
+		ViterbiNode node3 = ViterbiNode.createViterbiNodeFromState(s3);
+		//log 0.8
+		node3.setForward(-0.2231436);
+		node3.setForwardFinished(true);;
+		
+		node1.setColumn(column);
+		node1.getPreviousNodes().add(node2);
+		node1.getPreviousNodes().add(node3);
+		
+		node1.calculateForward();
+		
+		assertTrue(node1.isForwardFinished());
+		
+		assertEquals(0.5 * 0.5 * 0.5 + 0.5 * 0.5 * 0.8, Math.exp(node1.getForward()),0.0001);
+		
+	}
+	
+	@Test
+	public void testForwardEndState() {
+		
+		State s1 = State.createEndState();
+		State s2 = State.createState("S2");
+		State s3 = State.createState("S3");
+		
+		
+		ViterbiColumn column = ViterbiColumn.createInteriorColumn(0, null);
+		ViterbiNode node1 = ViterbiNode.createViterbiNodeFromState(s1);
+		ViterbiNode node2 = ViterbiNode.createViterbiNodeFromState(s2);
+		//log 0.5
+		node2.setForward(-0.6931472);
+		node2.setForwardFinished(true);;
+		ViterbiNode node3 = ViterbiNode.createViterbiNodeFromState(s3);
+		//log 0.5
+		node3.setForward(-0.6931472);
+		node3.setForwardFinished(true);;
+		
+		node1.setColumn(column);
+		node1.getPreviousNodes().add(node2);
+		node1.getPreviousNodes().add(node3);
+		
+		node1.calculateForward();
+		
+		assertTrue(node1.isForwardFinished());
+		
+		assertEquals(1.0, Math.exp(node1.getForward()),0.0001);
+		
+	}
+
 
 }

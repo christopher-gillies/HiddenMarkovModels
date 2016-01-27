@@ -206,7 +206,7 @@ public class HMM implements Validatable {
 		while(iter.hasNext()) {
 			ViterbiColumn next = iter.next();
 			for(ViterbiNode node : next.getNodes()) {
-				if(!node.isFinishedViterbi()) {
+				if(!node.isForwardFinished()) {
 					node.calculateForward();
 				}
 			}

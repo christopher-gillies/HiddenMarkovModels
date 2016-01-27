@@ -302,5 +302,57 @@ public class HMMTest {
 		assertEquals(16384,count);
 		
 	}
+	
+	@Test
+	public void testEvaluate1() {
+		HMM hmm = createBiasedCoinHMM();
+		
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		LinkedList<Symbol> seq = new LinkedList<Symbol>();
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		double prob = hmm.evaluate(seq, false);
+		
+		System.err.println("Probability of x: " + prob);
+		
+				
+		//compute sum for seq
+		
+		//get enumerations of all possible states
+		Set<State> states = new HashSet<State>();
+		states.add(fair);
+		states.add(biased);
+		Enumerator<State> enumerator = Enumerator.getEnumeratorForSymbolsAndLength(states, 14);
+		Iterator<List<State>> iter = enumerator.iterator();
+		int count = 0;
+		double sumOfProbs = 0;
+		while(iter.hasNext()) {
+			List<State> path = iter.next();
+			TraversableOrderedSet<StateSymbolPair> seqPairToCompare = StateSymbolPair.createFromListOfSymbolsAndStates(seq,path);
+			double probOfPath = hmm.calculateJointProbabilityOfSequencesAndStates(seqPairToCompare, false);
+			sumOfProbs += probOfPath;
+			count++;
+		}
+		
+		assertEquals(16384,count);
+		assertEquals(sumOfProbs,prob,0.00001);
+		
+	}
 
 }
