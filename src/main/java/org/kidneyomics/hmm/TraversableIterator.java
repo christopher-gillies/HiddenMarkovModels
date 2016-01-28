@@ -8,18 +8,19 @@ public class TraversableIterator<T extends Traverseable<T>> implements ListItera
 	T next = null;
 	T previous = null;
 	
-	private TraversableIterator(T startNode) {
-		current = startNode;
-		next = startNode;
-		previous = startNode;
+	private TraversableIterator(T previous, T current, T next) {
+		this.previous = previous;
+		this.current = current;
+		this.next = next;
+		
 	}
 	
 	static <E extends Traverseable<E>> TraversableIterator<E> getIteratorFromHead(E head) {
-		return new TraversableIterator<E>(head);
+		return new TraversableIterator<E>(null, null, head);
 	}
 	
 	static <E extends Traverseable<E>> TraversableIterator<E> getIteratorFromTail(E tail) {
-		return new TraversableIterator<E>(tail);
+		return new TraversableIterator<E>(tail, null, null);
 	}
 	
 	
