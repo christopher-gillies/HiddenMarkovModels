@@ -88,6 +88,36 @@ public class TraversableOrderedSetTest {
 		
 	}
 	
+	
+	@Test
+	public void testBackwards() {
+		StateSymbolPair pair1 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));
+		StateSymbolPair pair2 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
+		
+		StateSymbolPair pair3 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));
+		StateSymbolPair pair4 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
+		
+		
+		TraversableOrderedSet<StateSymbolPair>  collection = new TraversableOrderedSet<StateSymbolPair>();
+		
+		assertTrue(collection.add(pair1));
+		assertTrue(collection.add(pair2));
+		assertTrue(collection.add(pair3));
+		assertTrue(collection.add(pair4));
+	
+		ListIterator<StateSymbolPair> iter = collection.tailIterator();
+		int count = 0;
+		StateSymbolPair item = null;
+		// null -> 1 -> 2 -> 3 -> 4
+		while(iter.hasPrevious()) {
+			item = iter.previous();
+			count++;
+		}
+		
+		assertEquals(4,count);
+		assertEquals(pair1,item);
+	}
+	
 	@Test
 	public void testIteratorForwardThenBackwards() {
 		StateSymbolPair pair1 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));

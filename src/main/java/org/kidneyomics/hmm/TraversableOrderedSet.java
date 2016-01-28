@@ -124,7 +124,7 @@ public class TraversableOrderedSet<T extends Traverseable<T>> implements Set<T> 
 	}
 	
 	public ListIterator<T> tailIterator() {
-		return TraversableIterator.getIteratorFromHead(this.tail);
+		return TraversableIterator.getIteratorFromTail(this.tail);
 	}
 
 	public boolean remove(Object arg0) {
