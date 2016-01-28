@@ -3,6 +3,7 @@ package org.kidneyomics.hmm;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.Set;
 
 /**
@@ -114,8 +115,16 @@ public class TraversableOrderedSet<T extends Traverseable<T>> implements Set<T> 
 		}
 	}
 
-	public Iterator<T> iterator() {
-		return new TraversableIterator<T>(this.head);
+	public ListIterator<T> iterator() {
+		return TraversableIterator.getIteratorFromHead(this.head);
+	}
+	
+	public ListIterator<T> headIterator() {
+		return iterator();
+	}
+	
+	public ListIterator<T> tailIterator() {
+		return TraversableIterator.getIteratorFromHead(this.tail);
 	}
 
 	public boolean remove(Object arg0) {

@@ -49,7 +49,7 @@ public class StateSymbolPair implements Cloneable, Traverseable<StateSymbolPair>
 		StringBuilder stateSb = new StringBuilder();
 		stateSb.append("States:\t\t");
 		
-		Iterator<StateSymbolPair> iter = new TraversableIterator<StateSymbolPair>(this);
+		Iterator<StateSymbolPair> iter = TraversableIterator.getIteratorFromHead(this);
 		
 		while(iter.hasNext()) {
 			StateSymbolPair next = iter.next();

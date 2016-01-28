@@ -218,6 +218,18 @@ public class HMM implements Validatable {
 		}
 	}
 	
+	private void calcBackward(ViterbiGraph graph) {
+		/*
+		 * Initialization
+		 */
+		TraversableOrderedSet<ViterbiColumn> columns = graph.getColumns();
+		
+		//start from last column
+		Iterator<ViterbiColumn> iter = columns.tailIterator();
+		
+
+	}
+	
 	public State getEndState() {
 		return this.endState;
 	}
