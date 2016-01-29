@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -197,7 +198,7 @@ public class HMM implements Validatable {
 			ViterbiColumn next = iter.next();
 			for(ViterbiNode node : next.getNodes()) {
 				// log(0) = -Inf
-				node.setViterbi(Double.NEGATIVE_INFINITY);
+				node.setForward(Double.NEGATIVE_INFINITY);
 				node.setForwardFinished(false);
 			}
 		}
@@ -218,6 +219,26 @@ public class HMM implements Validatable {
 		}
 	}
 	
+	public double evaluateBackward(List<Symbol> symbols, boolean log) {
+		//consider moving this to ViterbiGraph
+		/*
+		 * create traversable ordered set
+		 */
+		TraversableOrderedSet<TraversableSymbol> emittedSymbols = new TraversableOrderedSet<TraversableSymbol>();
+		
+		for(Symbol symbol : symbols) {
+			emittedSymbols.add(new TraversableSymbol(symbol));
+		}
+		
+		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);
+		calcBackward(graph);
+		if(log) {
+			return graph.getStartNode().getBackward();
+		} else {
+			return Math.exp(graph.getStartNode().getBackward());
+		}
+	}
+	
 	private void calcBackward(ViterbiGraph graph) {
 		/*
 		 * Initialization
@@ -225,8 +246,35 @@ public class HMM implements Validatable {
 		TraversableOrderedSet<ViterbiColumn> columns = graph.getColumns();
 		
 		//start from last column
-		Iterator<ViterbiColumn> iter = columns.tailIterator();
+		ListIterator<ViterbiColumn> iter = columns.tailIterator();
 		
+		
+		//End state will be properly initialized in the recursion
+		while(iter.hasPrevious()) {
+			ViterbiColumn previous = iter.previous();
+			for(ViterbiNode node : previous.getNodes()) {
+				// log(0) = -Inf
+				node.setBackward(Double.NEGATIVE_INFINITY);
+				node.setBackwardFinished(false);
+			}
+		}
+		
+		
+		/*
+		 * Recursion
+		 */
+		iter = columns.tailIterator();
+		
+		
+		//End state will be properly initialized in the recursion
+		while(iter.hasPrevious()) {
+			ViterbiColumn previous = iter.previous();
+			for(ViterbiNode node : previous.getNodes()) {
+				if(!node.isBackwardFinished()) {
+					node.calculateBackward();
+				}
+			}
+		}
 
 	}
 	
