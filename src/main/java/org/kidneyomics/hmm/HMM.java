@@ -157,14 +157,14 @@ public class HMM implements Validatable {
 	 * log likeihood of x
 	 */
 	
-	public double evaluate(List<Symbol> symbols, boolean log) {
+	public double evaluate(List<Symbol> x, boolean log) {
 		//consider moving this to ViterbiGraph
 		/*
 		 * create traversable ordered set
 		 */
 		TraversableOrderedSet<TraversableSymbol> emittedSymbols = new TraversableOrderedSet<TraversableSymbol>();
 		
-		for(Symbol symbol : symbols) {
+		for(Symbol symbol : x) {
 			emittedSymbols.add(new TraversableSymbol(symbol));
 		}
 		
@@ -219,14 +219,14 @@ public class HMM implements Validatable {
 		}
 	}
 	
-	public double evaluateBackward(List<Symbol> symbols, boolean log) {
+	public double evaluateBackward(List<Symbol> x, boolean log) {
 		//consider moving this to ViterbiGraph
 		/*
 		 * create traversable ordered set
 		 */
 		TraversableOrderedSet<TraversableSymbol> emittedSymbols = new TraversableOrderedSet<TraversableSymbol>();
 		
-		for(Symbol symbol : symbols) {
+		for(Symbol symbol : x) {
 			emittedSymbols.add(new TraversableSymbol(symbol));
 		}
 		
@@ -236,6 +236,64 @@ public class HMM implements Validatable {
 			return graph.getStartNode().getBackward();
 		} else {
 			return Math.exp(graph.getStartNode().getBackward());
+		}
+	}
+	
+	//p(pi_i = k, given sequence x)
+	//probability that we pass through state k at emitted symbol i ... column i of viterbi graph
+	/**
+	 * 
+	 * @param state to be at at pos
+	 * @param pos = emitted symbol position in sequence
+	 * @param x = sequence
+	 * @param log = return in log scale
+	 * @return = probability of being in state k at the symbol emitted at position pos
+	 */
+	public double probInStateAtPositionGivenSequence(State state, int pos, List<Symbol> x, boolean log) {
+		
+		TraversableOrderedSet<TraversableSymbol> emittedSymbols = new TraversableOrderedSet<TraversableSymbol>();
+		
+		for(Symbol symbol : x) {
+			emittedSymbols.add(new TraversableSymbol(symbol));
+		}
+		
+		
+		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);		
+		return probInStateAtPositionGivenSequence(graph,state,pos,log);
+
+	}
+	
+	
+	/**
+	 * 
+	 * @param graph = viterbi graph
+	 * @param state = state to be at at pos
+	 * @param pos = emitted symbol position in sequence
+	 * @param x = sequence
+	 * @param log = return in log scale
+	 * @return = probability of being in state k at the symbol emitted at position pos
+	 */
+	public double probInStateAtPositionGivenSequence(ViterbiGraph graph, State state, int pos, boolean log) {
+		
+		if(!graph.forwardCalculated()) {
+			calcForward(graph);
+		}
+		
+		if(!graph.backwardCalculated()) {
+			calcBackward(graph);
+		}
+		
+		ViterbiColumn column = graph.getColumns().getAt(pos);
+		ViterbiNode node = column.getNode(state);
+		double logBackward = node.getBackward();
+		double logForward = node.getForward();
+		double logProbOfX = graph.getEndNode().getForward();
+		double sum = logForward + logBackward - logProbOfX;
+		
+		if(log) {
+			return sum;
+		} else {
+			return Math.exp(sum);
 		}
 	}
 	

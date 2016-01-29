@@ -35,6 +35,26 @@ public class TraversableOrderedSet<T extends Traverseable<T>> implements Set<T> 
 		return this.tail;
 	}
 	
+	public T getAt(int i) {
+		
+		if(i < 0 || i > size) {
+			throw new IllegalArgumentException("Outside bounds of list");
+		}
+		
+		Iterator<T> iter = this.iterator();
+		int count = 0;
+		T result = null;
+		while(iter.hasNext()) {
+			T next = iter.next();
+			if(count == i) {
+				result = next;
+				break;
+			}
+			count++;
+		}
+		return result;
+	}
+	
 	public boolean add(T e) {
 		if(e == null) {
 			throw new IllegalArgumentException("Input to add cannot be null");

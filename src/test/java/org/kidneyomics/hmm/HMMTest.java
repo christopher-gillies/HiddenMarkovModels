@@ -465,5 +465,10 @@ public class HMMTest {
 		assertEquals(16384,count);
 		assertEquals(1.0,sumOfProbs,0.00001);
 	}
+	
+	@Test 
+	public void testProbInStateAtPositionGivenSequence() {
+		//TODO: implement test
+	}
 
 }

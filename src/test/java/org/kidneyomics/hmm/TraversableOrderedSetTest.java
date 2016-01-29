@@ -189,5 +189,42 @@ public class TraversableOrderedSetTest {
 		assertEquals(pair1,last.getPrevious().getPrevious().getPrevious());
 		assertEquals(null,last.getPrevious().getPrevious().getPrevious().getPrevious());
 	}
+	
+	
+	@Test
+	public void testGetAtIndex() {
+		StateSymbolPair pair1 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));
+		StateSymbolPair pair2 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
+		
+		StateSymbolPair pair3 = new StateSymbolPair(State.createState("H"), Symbol.createSymbol("S"));
+		StateSymbolPair pair4 = new StateSymbolPair(State.createState("T"), Symbol.createSymbol("S2"));
+		
+		
+		TraversableOrderedSet<StateSymbolPair>  collection = new TraversableOrderedSet<StateSymbolPair>();
+		
+		assertTrue(collection.add(pair1));
+		assertTrue(collection.add(pair2));
+		assertTrue(collection.add(pair3));
+		assertTrue(collection.add(pair4));
+		
+		IllegalArgumentException e1 = null;
+		try { 
+			collection.getAt(-1);
+		} catch(IllegalArgumentException e) {
+			e1 = e;
+		}
+		assertNotNull(e1);
+		assertEquals(pair1,collection.getAt(0));
+		assertEquals(pair2,collection.getAt(1));
+		assertEquals(pair3,collection.getAt(2));
+		assertEquals(pair4,collection.getAt(3));
+		IllegalArgumentException e2 = null;
+		try { 
+			collection.getAt(-1);
+		} catch(IllegalArgumentException e) {
+			e2 = e;
+		}
+		assertNotNull(e2);
+	}
 
 }

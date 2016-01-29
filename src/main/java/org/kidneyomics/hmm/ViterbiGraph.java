@@ -25,7 +25,13 @@ public class ViterbiGraph {
 		buildViterbiGraph();
 	}
 	
+	public boolean forwardCalculated() {
+		return this.endNode.isForwardFinished();
+	}
 	
+	public boolean backwardCalculated() {
+		return this.startNode.isBackwardFinished();
+	}
 	
 	public ViterbiNode getStartNode() {
 		return startNode;
