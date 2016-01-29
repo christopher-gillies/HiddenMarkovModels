@@ -279,6 +279,51 @@ class ViterbiNode {
 		this.forwardFinished = true;
 	}
 	
+	void calculateBackward() {
+		/*
+		 * b_k(L) = a_k0
+		 * b_k(i) = sum_l a_kl * e_l(x_{i+1}) b_i(i + 1)
+		 * log b_k(i) = log (  sum_l a_kl * e_l(x_{i+1}) b_i(i + 1) ) 
+		 */
+		
+		State state = this.getState();
+		
+		List<Double> logBNextAklEmission = new LinkedList<Double>();
+		if(!state.isEndState()) {			
+			for(ViterbiNode next : this.getNextNodes()) {
+				//if the node is not finished calculate the forward value
+				if(!next.isBackwardFinished()) {
+					next.calculateForward();
+				}
+				double logTransitionProbNext = 0;
+				double logEmissionProbNext = 0;
+				double logBackwardNext = 0;
+				
+				State nextState = next.getState();
+				Symbol nextSymbol = next.getColumn().getSymbol();
+				if(!nextState.isEndState() || nextState.isConnectedEndState()) {
+					logTransitionProbNext = state.getTransitions().getLogProbability(nextState);
+					logBackwardNext = next.getBackward();
+				}
+				// if it is an end state that is connected assume transition probability of 1 or log (1) = 0
+				
+				if(!nextState.isSilentState()) {
+					logEmissionProbNext = nextState.getEmissions().getLogProbability(nextSymbol);
+				}
+				
+				double logProd = logTransitionProbNext + logEmissionProbNext + logBackwardNext;
+				
+				logBNextAklEmission.add(logProd);
+			}
+		}
+		
+		if(state.isEndState()) {
+			this.backward = 0;
+		} else {
+			this.backward = computeLogOfSumLogs(logBNextAklEmission);
+		}
+		this.backwardFinished = true;
+	}
 	
 	static double computeLogOfSum(List<Double> vals) {
 		List<Double> logs = new ArrayList<Double>(vals.size());
