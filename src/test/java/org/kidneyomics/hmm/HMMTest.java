@@ -266,6 +266,7 @@ public class HMMTest {
 		TraversableOrderedSet<StateSymbolPair> bestSeq = hmm.decode(seq);
 		double prob = hmm.calculateJointProbabilityOfSequencesAndStates(bestSeq, false);
 		
+		System.err.println("Viterbi Path");
 		System.err.println("BestSeq: " + bestSeq.toString());
 		System.err.println("BestProb: " + prob);
 		
@@ -468,7 +469,44 @@ public class HMMTest {
 	
 	@Test 
 	public void testProbInStateAtPositionGivenSequence() {
-		//TODO: implement test
+HMM hmm = createBiasedCoinHMM();
+		
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		LinkedList<Symbol> seq = new LinkedList<Symbol>();
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		
+		//probInStateAtPositionGivenSequence(State state, int pos, List<Symbol> x, boolean log) {
+		int count = 0;
+		for(int i = 0; i < seq.size(); i++) {
+			double biasedProb = hmm.probInStateAtPositionGivenSequence(biased, i, seq, false);
+			double fairProb = hmm.probInStateAtPositionGivenSequence(fair, i, seq, false);
+			double sum = biasedProb + fairProb;
+			System.err.println("Position: " + i);
+			System.err.println("Prob of fair: " + fairProb);
+			System.err.println("Prob of biased: " + biasedProb);
+			System.err.println("Sum of probs per state: " + sum);
+			assertEquals(1.0,sum,0.001);
+			count++;
+		}
+		assertEquals(seq.size(), count);
+		
 	}
 
 }

@@ -283,7 +283,8 @@ public class HMM implements Validatable {
 			calcBackward(graph);
 		}
 		
-		ViterbiColumn column = graph.getColumns().getAt(pos);
+		ViterbiColumn column = graph.getColumns().getAt(pos + 1);
+		assert(pos == column.getColumnNumber());
 		ViterbiNode node = column.getNode(state);
 		double logBackward = node.getBackward();
 		double logForward = node.getForward();
