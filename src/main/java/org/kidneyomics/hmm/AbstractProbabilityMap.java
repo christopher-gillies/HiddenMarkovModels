@@ -76,6 +76,14 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 		}
 	}
 	
+	public void addToCount(T t, double toAdd) {
+		if(toAdd < 0) {
+			throw new IllegalArgumentException("value must be >=  0");
+		}
+		double current = this.counts.get(t);
+		setCount(t, current + toAdd);
+	}
+	
 	public double getCount(T t) {
 		if(this.counts.containsKey(t)) {
 			return this.counts.get(t);

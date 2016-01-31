@@ -151,6 +151,71 @@ public class HMM implements Validatable {
 		return result;
 	}
 	
+	public enum LEARN_MODE {
+		PSEUDO_COUNT,
+		ZERO_COUNT,
+		CUSTOM
+	}
+	
+	/**
+	 * Learn hmm parameters when the state and sequence paths are known
+	 * @param seq
+	 */
+	public void learn(TraversableOrderedSet<StateSymbolPair> seq, LEARN_MODE mode) {
+		
+		switch(mode) {
+		case PSEUDO_COUNT:
+			for(State s : this.states.values()) {
+				s.getTransitions().initalizeAllCountsTo1();
+				s.getEmissions().initalizeAllCountsTo1();
+			}
+			break;
+		case ZERO_COUNT:
+			for(State s : this.states.values()) {
+				s.getTransitions().initalizeAllCountsTo0();
+				s.getEmissions().initalizeAllCountsTo0();
+			}
+			break;
+		case CUSTOM:
+			//just use the count values as is
+			break;
+		}
+		
+		//get counts
+		Iterator<StateSymbolPair> iter = seq.iterator();
+		while(iter.hasNext()) {
+			StateSymbolPair current = iter.next();
+			State currentState = current.getState();
+			Symbol currentSymbol = current.getEmittedSymbol();
+			StateSymbolPair next = current.getNext();
+			//only count transition if there is a next state
+			if(next != null) {
+				//transition counts
+				
+				State nextState = next.getState();
+				currentState.getTransitions().addToCount(nextState, 1.0);
+			}
+			
+			if(currentSymbol == null && !currentState.isSilentState()) {
+				throw new IllegalStateException("Cannot have null symbol and non silent state");
+			}
+			
+			if(currentSymbol != null && currentState.isSilentState()) {
+				throw new IllegalStateException("Cannot have symbol and silent state");
+			}
+			
+			if(!currentState.isSilentState()) {
+				currentState.getEmissions().addToCount(currentSymbol, 1.0);
+			}
+		}
+		
+		//set probs
+		for(State s : this.states.values()) {
+			s.getTransitions().setProbsFromCounts();
+			s.getEmissions().setProbsFromCounts();
+		}
+	}
+	
 	/*
 	 * Evaluation
 	 * calculate the probability of x given the model

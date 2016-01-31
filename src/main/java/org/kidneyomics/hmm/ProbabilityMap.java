@@ -13,6 +13,7 @@ public interface ProbabilityMap<T> {
 	void initalizeAllCountsTo1();
 	void setProbsFromCounts();
 	Set<T> getKeys(); 
+	void addToCount(T t, double toAdd);
 	/**
 	 * 
 	 * @return true if this probability map has no objects in it

@@ -155,6 +155,9 @@ public class EmissionsTest {
 		assertEquals(0.0, e.getCount(s2),0.00001);
 		assertEquals(0.0, e.getCount(s3),0.00001);
 		
+		e.addToCount(s1, 2);
+		assertEquals(2.0, e.getCount(s1),0.00001);
+		
 		e.setCount(s1, 1);
 		e.setCount(s2, 2);
 		e.setCount(s3, 3);
