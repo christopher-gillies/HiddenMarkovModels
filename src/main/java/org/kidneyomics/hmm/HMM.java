@@ -157,20 +157,59 @@ public class HMM implements Validatable {
 		CUSTOM
 	}
 	
+	
+	public void learn(TraversableOrderedSet<StateSymbolPair> seq, LEARN_MODE mode) {
+		LinkedList<TraversableOrderedSet<StateSymbolPair>> seqs = new LinkedList<TraversableOrderedSet<StateSymbolPair>>();
+		seqs.add(seq);
+		learn(seqs,mode);
+	}
+	
 	/**
 	 * Learn hmm parameters when the state and sequence paths are known
 	 * @param seq
 	 */
-	public void learn(TraversableOrderedSet<StateSymbolPair> seq, LEARN_MODE mode) {
+	public void learn(List<TraversableOrderedSet<StateSymbolPair>> seqs, LEARN_MODE mode) {
 		//TODO: add support for multiple sequences
+		State startState = this.getStartState();
+		State endState = this.getEndState();
 		switch(mode) {
 		case PSEUDO_COUNT:
+			
+			if(!startState.isSilentState()) {
+				startState.getEmissions().initalizeAllCountsTo1();
+			} 
+			
+			startState.getTransitions().initalizeAllCountsTo1();
+			
+			if(!endState.isSilentState()) {
+				endState.getEmissions().initalizeAllCountsTo1();
+			}
+			
+			if(endState.isConnectedEndState()) {
+				endState.getTransitions().initalizeAllCountsTo1();
+			}
+			
 			for(State s : this.states.values()) {
 				s.getTransitions().initalizeAllCountsTo1();
 				s.getEmissions().initalizeAllCountsTo1();
 			}
 			break;
 		case ZERO_COUNT:
+			
+			if(!startState.isSilentState()) {
+				startState.getEmissions().initalizeAllCountsTo0();
+			} 
+			
+			startState.getTransitions().initalizeAllCountsTo0();
+			
+			if(!endState.isSilentState()) {
+				endState.getEmissions().initalizeAllCountsTo0();
+			}
+			
+			if(endState.isConnectedEndState()) {
+				endState.getTransitions().initalizeAllCountsTo0();
+			}
+			
 			for(State s : this.states.values()) {
 				s.getTransitions().initalizeAllCountsTo0();
 				s.getEmissions().initalizeAllCountsTo0();
@@ -181,37 +220,40 @@ public class HMM implements Validatable {
 			break;
 		}
 		
-		//get counts
-		Iterator<StateSymbolPair> iter = seq.iterator();
-		
-		StateSymbolPair first = seq.getAt(0);
-		State firstState = first.getState();
-		if(firstState != this.getStartState()) {
-			this.startState.getTransitions().addToCount(firstState, 1.0);
-		}
-		while(iter.hasNext()) {
-			StateSymbolPair current = iter.next();
-			State currentState = current.getState();
-			Symbol currentSymbol = current.getEmittedSymbol();
-			StateSymbolPair next = current.getNext();
-			//only count transition if there is a next state
-			if(next != null) {
-				//transition counts
+		//get counts across all sequences
+		for(TraversableOrderedSet<StateSymbolPair> seq : seqs) {
+			//get counts
+			Iterator<StateSymbolPair> iter = seq.iterator();
+			
+			StateSymbolPair first = seq.getAt(0);
+			State firstState = first.getState();
+			if(firstState != startState) {
+				this.startState.getTransitions().addToCount(firstState, 1.0);
+			}
+			while(iter.hasNext()) {
+				StateSymbolPair current = iter.next();
+				State currentState = current.getState();
+				Symbol currentSymbol = current.getEmittedSymbol();
+				StateSymbolPair next = current.getNext();
+				//only count transition if there is a next state
+				if(next != null) {
+					//transition counts
+					
+					State nextState = next.getState();
+					currentState.getTransitions().addToCount(nextState, 1.0);
+				}
 				
-				State nextState = next.getState();
-				currentState.getTransitions().addToCount(nextState, 1.0);
-			}
-			
-			if(currentSymbol == null && !currentState.isSilentState()) {
-				throw new IllegalStateException("Cannot have null symbol and non silent state");
-			}
-			
-			if(currentSymbol != null && currentState.isSilentState()) {
-				throw new IllegalStateException("Cannot have symbol and silent state");
-			}
-			
-			if(!currentState.isSilentState()) {
-				currentState.getEmissions().addToCount(currentSymbol, 1.0);
+				if(currentSymbol == null && !currentState.isSilentState()) {
+					throw new IllegalStateException("Cannot have null symbol and non silent state");
+				}
+				
+				if(currentSymbol != null && currentState.isSilentState()) {
+					throw new IllegalStateException("Cannot have symbol and silent state");
+				}
+				
+				if(!currentState.isSilentState()) {
+					currentState.getEmissions().addToCount(currentSymbol, 1.0);
+				}
 			}
 		}
 		
@@ -220,6 +262,16 @@ public class HMM implements Validatable {
 			s.getTransitions().setProbsFromCounts();
 			s.getEmissions().setProbsFromCounts();
 		}
+		
+		if(!startState.isSilentState()) {
+			startState.getEmissions().setProbsFromCounts();
+		}
+		startState.getTransitions().setProbsFromCounts();
+		
+		if(!endState.isSilentState()) {
+			endState.getEmissions().setProbsFromCounts();
+		}
+		endState.getTransitions().setProbsFromCounts();
 	}
 	
 	/*

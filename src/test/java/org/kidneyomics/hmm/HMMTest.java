@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
+import org.kidneyomics.hmm.HMM.LEARN_MODE;
 
 public class HMMTest {
 
@@ -559,9 +560,9 @@ public class HMMTest {
 	@Test
 	public void testLearn1() {
 		//TODO: finish test
-		//TODO: add support for multiple sequences to learn
 		HMM hmm = createBiasedCoinHMM();
 		
+		State start = hmm.getStartState();
 		Symbol heads = hmm.getSymbolByName("H");
 		Symbol tails = hmm.getSymbolByName("T");
 		State fair = hmm.getStateByName("F");
@@ -575,7 +576,48 @@ public class HMMTest {
 		StateSymbolPair pair4 = new StateSymbolPair(biased, tails);
 		StateSymbolPair pair5 = new StateSymbolPair(biased, tails);
 		
-		//pairs.add(e)
+		pairs.add(pair1);
+		pairs.add(pair2);
+		pairs.add(pair3);
+		pairs.add(pair4);
+		pairs.add(pair5);
+		
+		hmm.learn(pairs, LEARN_MODE.ZERO_COUNT);
+		
+		//check counts
+		assertEquals(1.0,start.getTransitions().getCount(fair),0.000001);
+		assertEquals(0.0,start.getTransitions().getCount(biased),0.000001);
+		
+		assertEquals(1.0,fair.getTransitions().getCount(fair),0.000001);
+		assertEquals(1.0,fair.getTransitions().getCount(biased),0.000001);
+		
+		assertEquals(0.0,biased.getTransitions().getCount(fair),0.000001);
+		assertEquals(2.0,biased.getTransitions().getCount(biased),0.000001);
+		
+		assertEquals(1.0,fair.getEmissions().getCount(heads),0.000001);
+		assertEquals(1.0,fair.getEmissions().getCount(tails),0.000001);
+		assertEquals(1.0,biased.getEmissions().getCount(heads),0.000001);
+		assertEquals(2.0,biased.getEmissions().getCount(tails),0.000001);
+		
+		//check probabilities
+		
+		assertEquals(1.0,start.getTransitions().getProbability(fair),0.000001);
+		assertEquals(0.0,start.getTransitions().getProbability(biased),0.000001);
+		
+		assertEquals(0.5,fair.getTransitions().getProbability(fair),0.000001);
+		assertEquals(0.5,fair.getTransitions().getProbability(biased),0.000001);
+		
+		assertEquals(0.0,biased.getTransitions().getProbability(fair),0.000001);
+		assertEquals(1.0,biased.getTransitions().getProbability(biased),0.000001);
+		
+		assertEquals(0.5,fair.getEmissions().getProbability(heads),0.000001);
+		assertEquals(0.5,fair.getEmissions().getProbability(tails),0.000001);
+		assertEquals(1.0 / 3.0,biased.getEmissions().getProbability(heads),0.000001);
+		assertEquals(2.0 / 3.0,biased.getEmissions().getProbability(tails),0.000001);
+		
+		
+		//assertEquals(1.0,fair.getEmissions().getCount(heads),0.000001);
+		
 	}
 
 }
