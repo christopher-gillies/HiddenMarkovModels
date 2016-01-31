@@ -469,7 +469,7 @@ public class HMMTest {
 	
 	@Test 
 	public void testProbInStateAtPositionGivenSequence() {
-HMM hmm = createBiasedCoinHMM();
+		HMM hmm = createBiasedCoinHMM();
 		
 		Symbol heads = hmm.getSymbolByName("H");
 		Symbol tails = hmm.getSymbolByName("T");
@@ -492,13 +492,31 @@ HMM hmm = createBiasedCoinHMM();
 		seq.add(heads);
 		seq.add(tails);
 		
+		TraversableOrderedSet<StateSymbolPair> list = hmm.decode(seq);
+		
+		Iterator<StateSymbolPair> iter = list.iterator();
+		
+		
 		//probInStateAtPositionGivenSequence(State state, int pos, List<Symbol> x, boolean log) {
 		int count = 0;
 		for(int i = 0; i < seq.size(); i++) {
 			double biasedProb = hmm.probInStateAtPositionGivenSequence(biased, i, seq, false);
 			double fairProb = hmm.probInStateAtPositionGivenSequence(fair, i, seq, false);
+			
+			StateSymbolPair next = iter.next();
+			State max = null;
+			if(biasedProb > fairProb) {
+				assertEquals(next.getState(),biased);
+				max = biased;
+			} else {
+				assertEquals(next.getState(),fair);
+				max = fair;
+			}
+			
 			double sum = biasedProb + fairProb;
 			System.err.println("Position: " + i);
+			System.err.println("Viterbi State: " + next.getState());
+			System.err.println("Posterior State: " + max);
 			System.err.println("Prob of fair: " + fairProb);
 			System.err.println("Prob of biased: " + biasedProb);
 			System.err.println("Sum of probs per state: " + sum);

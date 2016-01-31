@@ -138,4 +138,62 @@ public class EmissionsTest {
 		assertEquals(1.0, sum5, 0.0001);
 		
 	}
+	
+	@Test
+	public void testCounts() {
+		Emissions e = new Emissions(new DefaultRandomNumberSerivce(1l));
+		
+		Symbol s1 = Symbol.createSymbol("H");
+		Symbol s2 = Symbol.createSymbol("T");
+		Symbol s3 = Symbol.createSymbol("O");
+		
+		e.setProbability(s1, 0.1);
+		e.setProbability(s2, 0.1);
+		e.setProbability(s3, 0.1);
+		
+		assertEquals(0.0, e.getCount(s1),0.00001);
+		assertEquals(0.0, e.getCount(s2),0.00001);
+		assertEquals(0.0, e.getCount(s3),0.00001);
+		
+		e.setCount(s1, 1);
+		e.setCount(s2, 2);
+		e.setCount(s3, 3);
+		
+		//should not change counts
+		e.setProbability(s1, 0.1);
+		
+		e.setProbsFromCounts();
+		
+		
+		assertEquals(1.0, e.getCount(s1),0.00001);
+		assertEquals(2.0, e.getCount(s2),0.00001);
+		assertEquals(3.0, e.getCount(s3),0.00001);
+		
+		assertEquals(1.0 / 6.0, e.getProbability(s1),0.00001);
+		assertEquals(2.0 / 6.0, e.getProbability(s2),0.00001);
+		assertEquals(3.0 / 6.0, e.getProbability(s3),0.00001);
+		
+		assertEquals(Math.log(1.0 / 6.0), e.getLogProbability(s1),0.00001);
+		assertEquals(Math.log(2.0 / 6.0), e.getLogProbability(s2),0.00001);
+		assertEquals(Math.log(3.0 / 6.0), e.getLogProbability(s3),0.00001);
+		
+		e.initalizeAllCountsTo0();
+		
+		assertEquals(0.0, e.getCount(s1),0.00001);
+		assertEquals(0.0, e.getCount(s2),0.00001);
+		assertEquals(0.0, e.getCount(s3),0.00001);
+		
+		e.initalizeAllCountsTo1();
+		
+		assertEquals(1.0, e.getCount(s1),0.00001);
+		assertEquals(1.0, e.getCount(s2),0.00001);
+		assertEquals(1.0, e.getCount(s3),0.00001);
+		
+		e.setProbsFromCounts();
+		
+		assertEquals(1.0 / 3.0, e.getProbability(s1),0.00001);
+		assertEquals(1.0 / 3.0, e.getProbability(s2),0.00001);
+		assertEquals(1.0 / 3.0, e.getProbability(s3),0.00001);
+		
+	}
 }

@@ -9,6 +9,7 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	//ideally the state objects will be pointers to the other states in the model
 	protected final Map<T,Double> probs;
 	protected final Map<T,Double> logProbs;
+	protected final Map<T,Double> counts;
 	
 	protected final RandomNumberService randomNumberService;
 	protected final boolean immutable;
@@ -16,6 +17,7 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	protected AbstractProbabilityMap() {
 		this.logProbs = new HashMap<T,Double>();
 		this.probs = new HashMap<T,Double>();
+		this.counts = new HashMap<T,Double>();
 		this.randomNumberService = new DefaultRandomNumberSerivce();
 		this.immutable = false;
 	}
@@ -24,6 +26,7 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	protected AbstractProbabilityMap(RandomNumberService randomNumberService) {
 		this.probs = new HashMap<T,Double>();
 		this.logProbs = new HashMap<T,Double>();
+		this.counts = new HashMap<T,Double>();
 		this.randomNumberService = randomNumberService;
 		this.immutable = false;
 	}
@@ -31,6 +34,7 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	protected AbstractProbabilityMap(RandomNumberService randomNumberService, boolean immutable) {
 		this.logProbs = new HashMap<T,Double>();
 		this.probs = new HashMap<T,Double>();
+		this.counts = new HashMap<T,Double>();
 		this.randomNumberService = randomNumberService;
 		this.immutable = immutable;
 	}
@@ -57,6 +61,57 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 		}
 	}
 	
+	public void setCount(T t, double count) {
+		if(count < 0) {
+			throw new IllegalArgumentException("value must be >=  0");
+		}
+		
+		if(!immutable) {
+			this.counts.put(t, count);
+			if(!this.probs.containsKey(t)) {
+				//smallest possible positive value
+				this.probs.put(t, Double.MIN_NORMAL);
+				this.logProbs.put(t, Math.log(Double.MIN_NORMAL));
+			}
+		}
+	}
+	
+	public double getCount(T t) {
+		if(this.counts.containsKey(t)) {
+			return this.counts.get(t);
+		} else {
+			return 0.0;
+		}
+	}
+	
+	public void initalizeAllCountsTo0() {
+		for(T t : this.counts.keySet()) {
+			this.counts.put(t, 0.0);
+		}
+	}
+	
+	public void initalizeAllCountsTo1() {
+		for(T t : this.counts.keySet()) {
+			this.counts.put(t, 1.0);
+		}
+	}
+	
+	public void setProbsFromCounts() {
+		//compute maximum likelihood probs
+		//get sum
+		double sum = 0.0;
+		for(T t : this.counts.keySet()) {
+			sum += this.counts.get(t);
+		}
+		
+		//set probs and log probs
+		for(T t : this.counts.keySet()) {
+			double count = this.counts.get(t);
+			this.probs.put(t, count / sum);
+			this.logProbs.put(t, Math.log(count / sum));
+		}
+	}
+	
 	/**
 	 * store two maps, one on log scale and one on normal scale
 	 */
@@ -73,10 +128,16 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 				if(this.probs.containsKey(t)) {
 					this.probs.remove(t);
 					this.logProbs.remove(t);
+					this.counts.remove(t);
 				}
 			} else {
 				this.probs.put(t, value);
 				this.logProbs.put(t, Math.log(value));
+				//if counts contains the key already do nothing
+				//if it doesnt then just set the value to be zero
+				if(!this.counts.containsKey(t)) {
+					this.counts.put(t, 0.0);
+				}
 			}
 		}
 	}
@@ -85,6 +146,7 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 		if(!immutable) {
 			this.probs.remove(t);
 			this.logProbs.remove(t);
+			this.counts.remove(t);
 		}
 	}
 
@@ -104,7 +166,11 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 	}
 	
 	public T emit() {
-		return randomNumberService.emit(probs);
+		if(!this.isSilent()) {
+			return randomNumberService.emit(probs);
+		} else {
+			return null;
+		}
 	}
 	
 	public Set<T> getKeys() {
