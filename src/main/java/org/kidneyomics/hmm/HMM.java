@@ -162,7 +162,7 @@ public class HMM implements Validatable {
 	 * @param seq
 	 */
 	public void learn(TraversableOrderedSet<StateSymbolPair> seq, LEARN_MODE mode) {
-		
+		//TODO: add support for multiple sequences
 		switch(mode) {
 		case PSEUDO_COUNT:
 			for(State s : this.states.values()) {
@@ -183,6 +183,12 @@ public class HMM implements Validatable {
 		
 		//get counts
 		Iterator<StateSymbolPair> iter = seq.iterator();
+		
+		StateSymbolPair first = seq.getAt(0);
+		State firstState = first.getState();
+		if(firstState != this.getStartState()) {
+			this.startState.getTransitions().addToCount(firstState, 1.0);
+		}
 		while(iter.hasNext()) {
 			StateSymbolPair current = iter.next();
 			State currentState = current.getState();

@@ -386,6 +386,35 @@ public class HMMTest {
 	//TODO: add more tests for connected end state hmm
 	
 	
+	@Test
+	public void testEvaluate3() {
+		HMM hmm = createBiasedCoinHMM();
+		
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		LinkedList<Symbol> seq = new LinkedList<Symbol>();
+		seq.add(tails);
+		
+		double probOfTails = 0.5 * 0.5 + 0.5 * 0.1;
+		double prob = hmm.evaluate(seq, false);
+		
+		assertEquals(probOfTails, prob, 0.0000001);
+		
+		
+		double probOfHeads = 0.5 * 0.5 + 0.5 * 0.9;
+		LinkedList<Symbol> seq2 = new LinkedList<Symbol>();
+		seq2.add(heads);
+		
+		assertEquals(1.0, probOfHeads + probOfTails,0.00001);
+		
+		double prob2 = hmm.evaluate(seq2, false);
+		assertEquals(probOfHeads, prob2, 0.0000001);
+		
+		assertEquals(1.0, prob2 + prob,0.00001);
+	}
 	
 	@Test
 	public void testEvaluateBacward11() {
@@ -525,6 +554,28 @@ public class HMMTest {
 		}
 		assertEquals(seq.size(), count);
 		
+	}
+	
+	@Test
+	public void testLearn1() {
+		//TODO: finish test
+		//TODO: add support for multiple sequences to learn
+		HMM hmm = createBiasedCoinHMM();
+		
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		TraversableOrderedSet<StateSymbolPair> pairs = new TraversableOrderedSet<StateSymbolPair>();
+		
+		StateSymbolPair pair1 = new StateSymbolPair(fair, heads);
+		StateSymbolPair pair2 = new StateSymbolPair(fair, tails);
+		StateSymbolPair pair3 = new StateSymbolPair(biased, heads);
+		StateSymbolPair pair4 = new StateSymbolPair(biased, tails);
+		StateSymbolPair pair5 = new StateSymbolPair(biased, tails);
+		
+		//pairs.add(e)
 	}
 
 }
