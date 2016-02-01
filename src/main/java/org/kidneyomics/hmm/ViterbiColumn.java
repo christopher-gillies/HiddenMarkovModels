@@ -82,6 +82,10 @@ class ViterbiColumn implements Traverseable<ViterbiColumn> {
 	public ViterbiNode getNode(State state) {
 		return this.nodes.get(state);
 	}
+	
+	public boolean containsNode(State state) {
+		return this.nodes.containsKey(state);
+	}
 
 	Collection<ViterbiNode> getNodes() {
 		return this.nodes.values();

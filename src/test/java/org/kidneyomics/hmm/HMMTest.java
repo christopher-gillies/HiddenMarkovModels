@@ -1,6 +1,7 @@
 package org.kidneyomics.hmm;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -731,33 +732,52 @@ public class HMMTest {
 	
 	@Test
 	public void testComputeExpectedTransitionCountsFromStateToState() {
-		//TODO: not finished  
+
 		HMM hmm = createBiasedCoinHMM();
+		
 		Symbol heads = hmm.getSymbolByName("H");
 		Symbol tails = hmm.getSymbolByName("T");
 		State fair = hmm.getStateByName("F");
 		State biased = hmm.getStateByName("B");
 		
+	
 		LinkedList<Symbol> seq = new LinkedList<Symbol>();
 		seq.add(tails);
 		seq.add(heads);
 		seq.add(tails);
 		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		
+		TraversableOrderedSet<TraversableSymbol> emSeq = TraversableOrderedSetUtil.symbolListToTraverseable(seq);
+		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(hmm, emSeq);
 		
 		
-		TraversableOrderedSet<TraversableSymbol> travSeq = TraversableOrderedSetUtil.symbolListToTraverseable(seq);
-		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(hmm, travSeq);
+		ViterbiColumn column = graph.getColumns().getAt(2);
 		
-		hmm.calcBackward(graph);
-		hmm.calcForward(graph);
+		double res1 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,fair,fair));
+		double res2 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,fair,biased));
+		double res3 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,biased,biased));
+		double res4 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,biased,fair));
 		
-		LinkedList<ViterbiGraph> graphs = new LinkedList<ViterbiGraph>();
-		graphs.add(graph);
+		double fairProb = hmm.probInStateAtPositionGivenSequence(graph,fair,1,false);
+		double biasedProb = hmm.probInStateAtPositionGivenSequence(graph,biased,1,false);
+		assertEquals(1.0, fairProb + biasedProb, 0.0001);
 		
-		hmm.computeExpectedTransitionCounts(graphs);
+		assertEquals(fairProb, res1 + res2, 0.0001);
+		assertEquals(biasedProb, res3 + res4, 0.0001);
+		
+		assertEquals(1.0, res1 + res2 + res3 + res4, 0.0001);
 		
 		
-		//double
 		
 		
 	}

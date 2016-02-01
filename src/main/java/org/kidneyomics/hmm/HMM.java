@@ -324,38 +324,46 @@ public class HMM implements Validatable {
 				throw new IllegalArgumentException("graphs should be calculated already");
 			}
 			
-			double logLikelihoodOfSeq = graph.getEndNode().getForward();
-			
 			//loop through forward columns
 			for(ViterbiColumn column : graph.getColumns()) {
+				//skip column if it does not contain state
+				if(!column.containsNode(state)) {
+					continue;
+				}
 				
-				ViterbiNode node = column.getNode(state);
-
-				if(transState.isSilentState()) {
-					ViterbiNode nextNode = column.getNode(transState);
-					double logForward = node.getForward();
-					double logBackward = nextNode.getBackward();
-					double logTransition = state.getTransitions().getLogProbability(transState);
-					double probOfTransititionFromStateToStateAtPos = logForward + logTransition + logBackward - logLikelihoodOfSeq;
-					logValsForSeq.add(probOfTransititionFromStateToStateAtPos);
-				} else {
-					ViterbiColumn nextColumn = column.getNext();
-					ViterbiNode nextNode = nextColumn.getNode(transState);
-					double logForward = node.getForward();
-					double logBackward = nextNode.getBackward();
-					double logTransition = state.getTransitions().getLogProbability(transState);
-					double logEmission = transState.getEmissions().getLogProbability(nextColumn.getSymbol());
-					double probOfTransititionFromStateToStateAtPos = logForward + logTransition + logEmission + logBackward - logLikelihoodOfSeq;
-					// we may need to reorder loops for this to work better and perform computation in logspace
-					//maybe store all counts in log scale and exponentiate at the end
+				double probOfTransititionFromStateToStateAtPos = computeProbOfTransitionFromStateToState(graph,column,state,transState);
+				if(probOfTransititionFromStateToStateAtPos != Double.NEGATIVE_INFINITY) {
 					logValsForSeq.add(probOfTransititionFromStateToStateAtPos);
 				}
+				
 			}
 		}
 		
 		double sum = Math.exp(ViterbiNode.computeLogOfSumLogs(logValsForSeq));
 		state.getTransitions().addToCount(transState, sum);
 		
+	}
+	
+	double computeProbOfTransitionFromStateToState(ViterbiGraph graph, ViterbiColumn column, State state, State transState) {
+		double logLikelihoodOfSeq = graph.getEndNode().getForward();
+		ViterbiNode node = column.getNode(state);
+		double probOfTransititionFromStateToStateAtPos = 0.0;
+		if(transState.isSilentState()) {
+			ViterbiNode nextNode = column.getNode(transState);
+			double logForward = node.getForward();
+			double logBackward = nextNode.getBackward();
+			double logTransition = state.getTransitions().getLogProbability(transState);
+			probOfTransititionFromStateToStateAtPos = logForward + logTransition + logBackward - logLikelihoodOfSeq;
+		} else {
+			ViterbiColumn nextColumn = column.getNext();
+			ViterbiNode nextNode = nextColumn.getNode(transState);
+			double logForward = node.getForward();
+			double logBackward = nextNode.getBackward();
+			double logTransition = state.getTransitions().getLogProbability(transState);
+			double logEmission = transState.getEmissions().getLogProbability(nextColumn.getSymbol());
+			probOfTransititionFromStateToStateAtPos = logForward + logTransition + logEmission + logBackward - logLikelihoodOfSeq;
+		}
+		return probOfTransititionFromStateToStateAtPos;
 	}
 	
 	/**
