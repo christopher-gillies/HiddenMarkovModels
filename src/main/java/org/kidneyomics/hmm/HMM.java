@@ -70,11 +70,8 @@ public class HMM implements Validatable {
 		/*
 		 * create traversable ordered set
 		 */
-		TraversableOrderedSet<TraversableSymbol> emittedSymbols = new TraversableOrderedSet<TraversableSymbol>();
+		TraversableOrderedSet<TraversableSymbol> emittedSymbols = TraversableOrderedSetUtil.symbolListToTraverseable(symbols);
 		
-		for(Symbol symbol : symbols) {
-			emittedSymbols.add(new TraversableSymbol(symbol));
-		}
 		
 		/*
 		 * Initialization
@@ -158,20 +155,7 @@ public class HMM implements Validatable {
 	}
 	
 	
-	public void learn(TraversableOrderedSet<StateSymbolPair> seq, LEARN_MODE mode) {
-		LinkedList<TraversableOrderedSet<StateSymbolPair>> seqs = new LinkedList<TraversableOrderedSet<StateSymbolPair>>();
-		seqs.add(seq);
-		learn(seqs,mode);
-	}
-	
-	/**
-	 * Learn hmm parameters when the state and sequence paths are known
-	 * @param seq
-	 */
-	public void learn(List<TraversableOrderedSet<StateSymbolPair>> seqs, LEARN_MODE mode) {
-		//TODO: add support for multiple sequences
-		State startState = this.getStartState();
-		State endState = this.getEndState();
+	void initializeStateCounts(LEARN_MODE mode) {
 		switch(mode) {
 		case PSEUDO_COUNT:
 			
@@ -219,6 +203,85 @@ public class HMM implements Validatable {
 			//just use the count values as is
 			break;
 		}
+	}
+	
+	/**
+	 * 
+	 * @param seqs -- sequences to calculate the likelihood
+	 * @param log -- return in log scale
+	 * @return likelihood of the sequences 
+	 */
+	public double likelihood(List<List<Symbol>> seqs, boolean log) {
+		//major performance improvement from saving viterbi graphs
+		double sum = 0.0;
+		for(List<Symbol> seq : seqs) {
+			sum += evaluate(seq, true);
+		}
+		
+		if(log) {
+			return sum;
+		} else {
+			return Math.exp(sum);
+		}
+	}
+	
+	public void learnEMSingle(List<Symbol> seq) {
+		LinkedList<List<Symbol>> seqs = new LinkedList<List<Symbol>>();
+		seqs.add(seq);
+		learnEM(seqs);
+	}
+	
+	public void learnEM(List<List<Symbol>> seqs) {
+		//initialize to pseudo counts and set initial probs
+		initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
+		setStateProbsFromCounts();
+		
+		int numSeqs = seqs.size();
+		List<TraversableOrderedSet<TraversableSymbol>> listOfSeqs = TraversableOrderedSetUtil.listOflistOfSymbolsToListOfTranversable(seqs);
+		//ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(hmm, emittedSymbols)
+		
+		int maxIterations = 1000;
+		int currentIteration = 0;
+		double threshold = 0.000001;
+		double logLikelihoodPrevious = 0.0;
+		double logLikelihoodCurrent = likelihood(seqs, true);
+		//check termination
+		while( Math.abs( logLikelihoodCurrent - logLikelihoodPrevious) < threshold 
+				&& currentIteration < maxIterations ) {
+			
+			//recurrence
+			for(TraversableOrderedSet<TraversableSymbol> seq : listOfSeqs) {
+				
+				//set to initial counts
+				initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
+				
+			}
+			
+			logLikelihoodPrevious = logLikelihoodCurrent;
+			logLikelihoodCurrent = likelihood(seqs, true);
+		}
+	}
+	
+	/**
+	 * Learn hmm parameters when the state and sequence paths are known
+	 * @param seq -- a sequence with known symbols and states
+	 * @param mode -- the mode of learnings, zero count based, pseudo counts, or custom
+	 */
+	public void learn(TraversableOrderedSet<StateSymbolPair> seq, LEARN_MODE mode) {
+		LinkedList<TraversableOrderedSet<StateSymbolPair>> seqs = new LinkedList<TraversableOrderedSet<StateSymbolPair>>();
+		seqs.add(seq);
+		learn(seqs,mode);
+	}
+	
+	/**
+	 * Learn hmm parameters when the state and sequence paths are known
+	 * @param seqs -- a list of sequences with known symbols and states
+	 * @param mode -- the mode of learnings, zero count based, pseudo counts, or custom
+	 */
+	public void learn(List<TraversableOrderedSet<StateSymbolPair>> seqs, LEARN_MODE mode) {
+		
+		//initialize state counts
+		initializeStateCounts(mode);
 		
 		//get counts across all sequences
 		for(TraversableOrderedSet<StateSymbolPair> seq : seqs) {
@@ -257,7 +320,11 @@ public class HMM implements Validatable {
 			}
 		}
 		
-		//set probs
+		//set state probs
+		setStateProbsFromCounts();
+	}
+	
+	void setStateProbsFromCounts() {
 		for(State s : this.states.values()) {
 			s.getTransitions().setProbsFromCounts();
 			s.getEmissions().setProbsFromCounts();

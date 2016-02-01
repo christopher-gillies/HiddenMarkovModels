@@ -615,8 +615,117 @@ public class HMMTest {
 		assertEquals(1.0 / 3.0,biased.getEmissions().getProbability(heads),0.000001);
 		assertEquals(2.0 / 3.0,biased.getEmissions().getProbability(tails),0.000001);
 		
+		hmm.learn(pairs, LEARN_MODE.PSEUDO_COUNT);
 		
-		//assertEquals(1.0,fair.getEmissions().getCount(heads),0.000001);
+		//check counts
+		assertEquals(2.0,start.getTransitions().getCount(fair),0.000001);
+		assertEquals(1.0,start.getTransitions().getCount(biased),0.000001);
+		
+		assertEquals(2.0,fair.getTransitions().getCount(fair),0.000001);
+		assertEquals(2.0,fair.getTransitions().getCount(biased),0.000001);
+		
+		assertEquals(1.0,biased.getTransitions().getCount(fair),0.000001);
+		assertEquals(3.0,biased.getTransitions().getCount(biased),0.000001);
+		
+		assertEquals(2.0,fair.getEmissions().getCount(heads),0.000001);
+		assertEquals(2.0,fair.getEmissions().getCount(tails),0.000001);
+		assertEquals(2.0,biased.getEmissions().getCount(heads),0.000001);
+		assertEquals(3.0,biased.getEmissions().getCount(tails),0.000001);
+		
+		//check probs
+		assertEquals(2.0 / 3.0,start.getTransitions().getProbability(fair),0.000001);
+		assertEquals(1.0 / 3.0,start.getTransitions().getProbability(biased),0.000001);
+		
+		assertEquals(0.5,fair.getTransitions().getProbability(fair),0.000001);
+		assertEquals(0.5,fair.getTransitions().getProbability(biased),0.000001);
+		
+		assertEquals(1.0 / 4.0,biased.getTransitions().getProbability(fair),0.000001);
+		assertEquals(3.0 / 4.0,biased.getTransitions().getProbability(biased),0.000001);
+		
+		assertEquals(0.5,fair.getEmissions().getProbability(heads),0.000001);
+		assertEquals(0.5,fair.getEmissions().getProbability(tails),0.000001);
+		assertEquals(2.0 / 5.0,biased.getEmissions().getProbability(heads),0.000001);
+		assertEquals(3.0 / 5.0,biased.getEmissions().getProbability(tails),0.000001);
+	}
+	
+	@Test
+	public void testLearn2() {
+		//TODO: finish test
+		HMM hmm = createBiasedCoinHMM();
+		
+		State start = hmm.getStartState();
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		TraversableOrderedSet<StateSymbolPair> pairs1 = new TraversableOrderedSet<StateSymbolPair>();
+		TraversableOrderedSet<StateSymbolPair> pairs2 = new TraversableOrderedSet<StateSymbolPair>();
+		
+		
+		StateSymbolPair pair1 = new StateSymbolPair(fair, heads);
+		
+		StateSymbolPair pair2 = new StateSymbolPair(biased, heads);
+		
+		pairs1.add(pair1);
+		pairs2.add(pair2);
+		
+		LinkedList<TraversableOrderedSet<StateSymbolPair>> list = new LinkedList<TraversableOrderedSet<StateSymbolPair>>();
+		list.add(pairs1);
+		list.add(pairs2);
+		
+		hmm.learn(list, LEARN_MODE.ZERO_COUNT);
+		
+		//check counts
+		assertEquals(1.0,start.getTransitions().getCount(fair),0.000001);
+		assertEquals(1.0,start.getTransitions().getCount(biased),0.000001);
+		
+		assertEquals(1.0,fair.getEmissions().getCount(heads),0.000001);
+		assertEquals(1.0,biased.getEmissions().getCount(heads),0.000001);
+		
+		hmm.learn(list, LEARN_MODE.PSEUDO_COUNT);
+		
+		//check counts
+		assertEquals(2.0,start.getTransitions().getCount(fair),0.000001);
+		assertEquals(2.0,start.getTransitions().getCount(biased),0.000001);
+		
+		assertEquals(2.0,fair.getEmissions().getCount(heads),0.000001);
+		assertEquals(2.0,biased.getEmissions().getCount(heads),0.000001);
+		
+	}
+	
+	@Test
+	public void testLikelihood() {
+		HMM hmm = createBiasedCoinHMM();
+		
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		List<List<Symbol>> seqs = new LinkedList<List<Symbol>>();
+		LinkedList<Symbol> seq = new LinkedList<Symbol>();
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		
+		seqs.add(seq);
+		seqs.add(seq);
+		
+		double prob = hmm.evaluate(seq, false);
+		
+		assertEquals(Math.pow(prob, 2), hmm.likelihood(seqs, false),0.0001);
 		
 	}
 

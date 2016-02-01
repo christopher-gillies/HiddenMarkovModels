@@ -9,6 +9,13 @@ import org.junit.Test;
 
 public class ViterbiNodeTest {
 
+	
+	@Test
+	public void testMinusInf() {
+		assertEquals(Double.NEGATIVE_INFINITY, 10.0 + Double.NEGATIVE_INFINITY,0.00001);
+		
+	}
+	
 	@Test
 	public void testComputeLogOfSum1() {
 		List<Double> list = new LinkedList<Double>();

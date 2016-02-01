@@ -245,7 +245,11 @@ class ViterbiNode {
 					logTransition = previous.getState().getTransitions().getLogProbability(state);
 				}
 				double logProd = logPreForward + logTransition;
-				logFPrevAkl.add(logProd);
+				//if it is negative infinity do not count
+				if(logProd != Double.NEGATIVE_INFINITY) {
+					logFPrevAkl.add(logProd);
+				}
+				
 			}
 			
 			sum = computeLogOfSumLogs(logFPrevAkl);
@@ -263,7 +267,10 @@ class ViterbiNode {
 				double logPreForward = previous.getForward();
 				double logTransition = previous.getState().getTransitions().getLogProbability(state);
 				double logProd = logPreForward + logTransition;
-				logFPrevAkl.add(logProd);
+				//if it is negaitve infinity do not count
+				if(logProd != Double.NEGATIVE_INFINITY) {
+					logFPrevAkl.add(logProd);
+				}
 			}
 			
 			sum = computeLogOfSumLogs(logFPrevAkl);
@@ -313,7 +320,9 @@ class ViterbiNode {
 				
 				double logProd = logTransitionProbNext + logEmissionProbNext + logBackwardNext;
 				
-				logBNextAklEmission.add(logProd);
+				if(logProd != Double.NEGATIVE_INFINITY) {
+					logBNextAklEmission.add(logProd);
+				}
 			}
 		}
 		
