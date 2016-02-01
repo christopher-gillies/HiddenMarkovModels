@@ -731,6 +731,7 @@ public class HMMTest {
 	
 	@Test
 	public void testComputeExpectedTransitionCountsFromStateToState() {
+		//TODO: not finished
 		HMM hmm = createBiasedCoinHMM();
 		Symbol heads = hmm.getSymbolByName("H");
 		Symbol tails = hmm.getSymbolByName("T");
