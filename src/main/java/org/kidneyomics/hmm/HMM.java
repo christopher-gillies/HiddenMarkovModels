@@ -205,17 +205,29 @@ public class HMM implements Validatable {
 		}
 	}
 	
+	public double likelihood(List<List<Symbol>> seqs, boolean log) {
+		return likelihood(seqs,log,null);
+	}
+	
 	/**
 	 * 
 	 * @param seqs -- sequences to calculate the likelihood
 	 * @param log -- return in log scale
 	 * @return likelihood of the sequences 
 	 */
-	public double likelihood(List<List<Symbol>> seqs, boolean log) {
+	public double likelihood(List<List<Symbol>> seqs, boolean log, Map<List<Symbol>,ViterbiGraph> graphs) {
 		//major performance improvement from saving viterbi graphs
 		double sum = 0.0;
-		for(List<Symbol> seq : seqs) {
-			sum += evaluate(seq, true);
+		if(graphs == null) {
+			for(List<Symbol> seq : seqs) {
+				sum += evaluate(seq, true);
+			}
+		} else {
+			//look up preconstructed viterbi graphs
+			for(List<Symbol> seq : seqs) {
+				ViterbiGraph graph = graphs.get(seq);
+				sum += evaluate(seq, true, graph);
+			}
 		}
 		
 		if(log) {
@@ -237,28 +249,92 @@ public class HMM implements Validatable {
 		setStateProbsFromCounts();
 		
 		int numSeqs = seqs.size();
-		List<TraversableOrderedSet<TraversableSymbol>> listOfSeqs = TraversableOrderedSetUtil.listOflistOfSymbolsToListOfTranversable(seqs);
-		//ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(hmm, emittedSymbols)
+		//create maps for ViterbiGraph lookups
+		//one map from seqs for likelihood calculations
+		//one map from traversable seqs for backward calculations
+		Map<List<Symbol>,ViterbiGraph> graphsFromSeqs = new HashMap<List<Symbol>, ViterbiGraph>();
+		Map<TraversableOrderedSet<TraversableSymbol>,ViterbiGraph> graphsFromTravSeqs = new HashMap<TraversableOrderedSet<TraversableSymbol>, ViterbiGraph>();
+		
+		for(List<Symbol> seq : seqs) {
+			TraversableOrderedSet<TraversableSymbol> emittedSymbols = TraversableOrderedSetUtil.symbolListToTraverseable(seq);
+			ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);
+			
+			graphsFromSeqs.put(seq, graph);
+			graphsFromTravSeqs.put(emittedSymbols, graph);
+		}
 		
 		int maxIterations = 1000;
 		int currentIteration = 0;
 		double threshold = 0.000001;
 		double logLikelihoodPrevious = 0.0;
-		double logLikelihoodCurrent = likelihood(seqs, true);
+		//forward variables will be calculated on the graphs for each sequence
+		double logLikelihoodCurrent = likelihood(seqs, true, graphsFromSeqs);
 		//check termination
 		while( Math.abs( logLikelihoodCurrent - logLikelihoodPrevious) < threshold 
 				&& currentIteration < maxIterations ) {
 			
 			//recurrence
-			for(TraversableOrderedSet<TraversableSymbol> seq : listOfSeqs) {
+			for(Map.Entry<TraversableOrderedSet<TraversableSymbol>,ViterbiGraph> entry : graphsFromTravSeqs.entrySet()) {
+				//TraversableOrderedSet<TraversableSymbol> emittedSeq = entry.getKey();
+				ViterbiGraph graph = entry.getValue();
 				
 				//set to initial counts
 				initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
 				
+				//forward is already calculated from likelihood call
+				calcBackward(graph);
+				
+				
+				//compute expectation of transitions
+				
+				//compute expectation of emissions
+				
 			}
 			
+			//update probabilities
+			setStateProbsFromCounts();
+			
+			
 			logLikelihoodPrevious = logLikelihoodCurrent;
-			logLikelihoodCurrent = likelihood(seqs, true);
+			//forward variables will be calculated on the graphs
+			logLikelihoodCurrent = likelihood(seqs, true, graphsFromSeqs);
+		}
+	}
+	
+	void computeExpectedTransitionCounts(Collection<ViterbiGraph> graphs) {
+		//each graph corresponds to a sequence
+		for(ViterbiGraph graph : graphs) {
+			if(!graph.forwardCalculated() || !graph.backwardCalculated()) {
+				throw new IllegalArgumentException("graphs should be calculated already");
+			}
+			
+			double logLikelihoodOfSeq = graph.getEndNode().getForward();
+			double logSum = 0;
+			List<Double> logValsForSeq = new LinkedList<Double>();
+			
+			for(ViterbiColumn column : graph.getColumns()) {
+				ViterbiColumn nextColumn = column.getNext();
+				
+				for(ViterbiNode node : column.getNodes()) {
+					State state = node.getState();
+					for(State transState : state.getTransitions().getKeys()) {
+						//could be null
+						ViterbiNode nextNode = nextColumn.getNode(transState);
+						if(transState.isSilentState()) {
+							
+						} else {
+							double logForward = node.getForward();
+							double logBackward = nextNode.getBackward();
+							double logTransition = state.getTransitions().getLogProbability(transState);
+							double logEmission = transState.getEmissions().getLogProbability(nextColumn.getSymbol());
+							double probOfTransititionFromStateToStateAtPos = logForward + logTransition + logEmission + logBackward - logLikelihoodOfSeq;
+							// we may need to reorder loops for this to work better and perform computation in logspace
+							//maybe store all counts in log scale and exponentiate at the end
+							state.getTransitions().addToCount(transState, Math.exp(probOfTransititionFromStateToStateAtPos));
+						}
+					}
+				}
+			}
 		}
 	}
 	
@@ -341,13 +417,23 @@ public class HMM implements Validatable {
 		endState.getTransitions().setProbsFromCounts();
 	}
 	
+	public double evaluate(List<Symbol> x, boolean log) {
+		return evaluate(x, log, null);
+	}
 	/*
 	 * Evaluation
 	 * calculate the probability of x given the model
 	 * log likeihood of x
 	 */
 	
-	public double evaluate(List<Symbol> x, boolean log) {
+	/**
+	 * 
+	 * @param x -- sequence to calculate likelihood of
+	 * @param log -- return in log scale
+	 * @param graph -- a viterbi graph that can be null, but can save some computation time
+	 * @return
+	 */
+	public double evaluate(List<Symbol> x, boolean log, ViterbiGraph graph) {
 		//consider moving this to ViterbiGraph
 		/*
 		 * create traversable ordered set
@@ -358,7 +444,10 @@ public class HMM implements Validatable {
 			emittedSymbols.add(new TraversableSymbol(symbol));
 		}
 		
-		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);
+		if(graph == null) {
+			graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);
+		}
+		
 		calcForward(graph);
 		if(log) {
 			return graph.getEndNode().getForward();
