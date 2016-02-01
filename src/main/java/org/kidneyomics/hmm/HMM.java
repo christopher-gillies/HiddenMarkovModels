@@ -253,14 +253,15 @@ public class HMM implements Validatable {
 		//one map from seqs for likelihood calculations
 		//one map from traversable seqs for backward calculations
 		Map<List<Symbol>,ViterbiGraph> graphsFromSeqs = new HashMap<List<Symbol>, ViterbiGraph>();
-		Map<TraversableOrderedSet<TraversableSymbol>,ViterbiGraph> graphsFromTravSeqs = new HashMap<TraversableOrderedSet<TraversableSymbol>, ViterbiGraph>();
-		
+		//Map<TraversableOrderedSet<TraversableSymbol>,ViterbiGraph> graphsFromTravSeqs = new HashMap<TraversableOrderedSet<TraversableSymbol>, ViterbiGraph>();
+		List<ViterbiGraph> graphs = new LinkedList<ViterbiGraph>();
 		for(List<Symbol> seq : seqs) {
 			TraversableOrderedSet<TraversableSymbol> emittedSymbols = TraversableOrderedSetUtil.symbolListToTraverseable(seq);
 			ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emittedSymbols);
 			
 			graphsFromSeqs.put(seq, graph);
-			graphsFromTravSeqs.put(emittedSymbols, graph);
+			//graphsFromTravSeqs.put(emittedSymbols, graph);
+			graphs.add(graph);
 		}
 		
 		int maxIterations = 1000;
@@ -274,22 +275,19 @@ public class HMM implements Validatable {
 				&& currentIteration < maxIterations ) {
 			
 			//recurrence
-			for(Map.Entry<TraversableOrderedSet<TraversableSymbol>,ViterbiGraph> entry : graphsFromTravSeqs.entrySet()) {
-				//TraversableOrderedSet<TraversableSymbol> emittedSeq = entry.getKey();
-				ViterbiGraph graph = entry.getValue();
-				
+			for(ViterbiGraph graph : graphs) {				
 				//set to initial counts
 				initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
 				
 				//forward is already calculated from likelihood call
 				calcBackward(graph);
-				
-				
-				//compute expectation of transitions
-				
-				//compute expectation of emissions
-				
+								
 			}
+			
+			//compute transition expectations
+			computeExpectedTransitionCounts(graphs);
+			
+			//compute emission expectations
 			
 			//update probabilities
 			setStateProbsFromCounts();
@@ -302,6 +300,24 @@ public class HMM implements Validatable {
 	}
 	
 	void computeExpectedTransitionCounts(Collection<ViterbiGraph> graphs) {
+		
+		//startState
+		for(State transState : startState.getTransitions().getKeys()) {
+			computeExpectedTransitionCountsFromStateToState(graphs,startState,transState);
+		}
+		
+		//interior states
+		for(State state : this.states.values()) {
+			for(State transState : state.getTransitions().getKeys()) {
+				computeExpectedTransitionCountsFromStateToState(graphs,startState,transState);
+			}
+		}
+		
+		//nothing to do for end state
+	}
+	
+	void computeExpectedTransitionCountsFromStateToState(Collection<ViterbiGraph> graphs, State state, State transState) {
+		List<Double> logValsForSeq = new LinkedList<Double>();
 		//each graph corresponds to a sequence
 		for(ViterbiGraph graph : graphs) {
 			if(!graph.forwardCalculated() || !graph.backwardCalculated()) {
@@ -309,33 +325,37 @@ public class HMM implements Validatable {
 			}
 			
 			double logLikelihoodOfSeq = graph.getEndNode().getForward();
-			double logSum = 0;
-			List<Double> logValsForSeq = new LinkedList<Double>();
 			
+			//loop through forward columns
 			for(ViterbiColumn column : graph.getColumns()) {
-				ViterbiColumn nextColumn = column.getNext();
 				
-				for(ViterbiNode node : column.getNodes()) {
-					State state = node.getState();
-					for(State transState : state.getTransitions().getKeys()) {
-						//could be null
-						ViterbiNode nextNode = nextColumn.getNode(transState);
-						if(transState.isSilentState()) {
-							
-						} else {
-							double logForward = node.getForward();
-							double logBackward = nextNode.getBackward();
-							double logTransition = state.getTransitions().getLogProbability(transState);
-							double logEmission = transState.getEmissions().getLogProbability(nextColumn.getSymbol());
-							double probOfTransititionFromStateToStateAtPos = logForward + logTransition + logEmission + logBackward - logLikelihoodOfSeq;
-							// we may need to reorder loops for this to work better and perform computation in logspace
-							//maybe store all counts in log scale and exponentiate at the end
-							state.getTransitions().addToCount(transState, Math.exp(probOfTransititionFromStateToStateAtPos));
-						}
-					}
+				ViterbiNode node = column.getNode(state);
+
+				if(transState.isSilentState()) {
+					ViterbiNode nextNode = column.getNode(transState);
+					double logForward = node.getForward();
+					double logBackward = nextNode.getBackward();
+					double logTransition = state.getTransitions().getLogProbability(transState);
+					double probOfTransititionFromStateToStateAtPos = logForward + logTransition + logBackward - logLikelihoodOfSeq;
+					logValsForSeq.add(probOfTransititionFromStateToStateAtPos);
+				} else {
+					ViterbiColumn nextColumn = column.getNext();
+					ViterbiNode nextNode = nextColumn.getNode(transState);
+					double logForward = node.getForward();
+					double logBackward = nextNode.getBackward();
+					double logTransition = state.getTransitions().getLogProbability(transState);
+					double logEmission = transState.getEmissions().getLogProbability(nextColumn.getSymbol());
+					double probOfTransititionFromStateToStateAtPos = logForward + logTransition + logEmission + logBackward - logLikelihoodOfSeq;
+					// we may need to reorder loops for this to work better and perform computation in logspace
+					//maybe store all counts in log scale and exponentiate at the end
+					logValsForSeq.add(probOfTransititionFromStateToStateAtPos);
 				}
 			}
 		}
+		
+		double sum = Math.exp(ViterbiNode.computeLogOfSumLogs(logValsForSeq));
+		state.getTransitions().addToCount(transState, sum);
+		
 	}
 	
 	/**
@@ -456,7 +476,7 @@ public class HMM implements Validatable {
 		}
 	}
 	
-	private void calcForward(ViterbiGraph graph) {
+	void calcForward(ViterbiGraph graph) {
 		
 		/*
 		 * Initialization
@@ -577,7 +597,7 @@ public class HMM implements Validatable {
 		}
 	}
 	
-	private void calcBackward(ViterbiGraph graph) {
+	void calcBackward(ViterbiGraph graph) {
 		/*
 		 * Initialization
 		 */

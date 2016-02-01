@@ -728,5 +728,37 @@ public class HMMTest {
 		assertEquals(Math.pow(prob, 2), hmm.likelihood(seqs, false),0.0001);
 		
 	}
+	
+	@Test
+	public void testComputeExpectedTransitionCountsFromStateToState() {
+		HMM hmm = createBiasedCoinHMM();
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		LinkedList<Symbol> seq = new LinkedList<Symbol>();
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		
+		
+		TraversableOrderedSet<TraversableSymbol> travSeq = TraversableOrderedSetUtil.symbolListToTraverseable(seq);
+		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(hmm, travSeq);
+		
+		hmm.calcBackward(graph);
+		hmm.calcForward(graph);
+		
+		LinkedList<ViterbiGraph> graphs = new LinkedList<ViterbiGraph>();
+		graphs.add(graph);
+		
+		hmm.computeExpectedTransitionCounts(graphs);
+		
+		
+		//double
+		
+		
+	}
 
 }
