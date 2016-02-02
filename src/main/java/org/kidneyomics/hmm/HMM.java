@@ -357,6 +357,9 @@ public class HMM implements Validatable {
 		} else {
 			ViterbiColumn nextColumn = column.getNext();
 			ViterbiNode nextNode = nextColumn.getNode(transState);
+			if(nextNode == null) {
+				throw new RuntimeException("Next node is null. There is no transiton to " + transState + " in next column");
+			}
 			double logForward = node.getForward();
 			double logBackward = nextNode.getBackward();
 			double logTransition = state.getTransitions().getLogProbability(transState);

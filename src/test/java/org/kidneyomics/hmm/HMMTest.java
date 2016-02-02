@@ -731,10 +731,11 @@ public class HMMTest {
 	}
 	
 	@Test
-	public void testComputeExpectedTransitionCountsFromStateToState() {
+	public void testComputeProbOfTransitionFromStateToState() {
 
 		HMM hmm = createBiasedCoinHMM();
-		
+		State start = hmm.getStartState();
+		State end = hmm.getEndState();
 		Symbol heads = hmm.getSymbolByName("H");
 		Symbol tails = hmm.getSymbolByName("T");
 		State fair = hmm.getStateByName("F");
@@ -760,26 +761,55 @@ public class HMMTest {
 		TraversableOrderedSet<TraversableSymbol> emSeq = TraversableOrderedSetUtil.symbolListToTraverseable(seq);
 		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(hmm, emSeq);
 		
+		hmm.calcBackward(graph);
+		hmm.calcForward(graph);
 		
-		ViterbiColumn column = graph.getColumns().getAt(2);
+		Iterator<ViterbiColumn> iter = graph.getColumns().iterator();
+		//start
 		
-		double res1 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,fair,fair));
-		double res2 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,fair,biased));
-		double res3 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,biased,biased));
-		double res4 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,biased,fair));
+		int count = 0;
+		ViterbiColumn startCol = iter.next();
 		
-		double fairProb = hmm.probInStateAtPositionGivenSequence(graph,fair,1,false);
-		double biasedProb = hmm.probInStateAtPositionGivenSequence(graph,biased,1,false);
-		assertEquals(1.0, fairProb + biasedProb, 0.0001);
+		double startFair = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,startCol,start,fair));
+		double startBiased = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,startCol,start,biased));
+		assertEquals(1.0, startFair + startBiased, 0.0001);
+		count++;
+		while(iter.hasNext()) {
+			ViterbiColumn column = iter.next();
+			//if the next column the end state
+			//then there is nothing to do since the last column is contains the end state and there are no transitions to the end state from any states
+			if(column.getNext().containsNode(end)) {
+				break;
+			}
+			System.err.println(count);
+			double res1 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,fair,fair));
+			double res2 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,fair,biased));
+			double res3 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,biased,biased));
+			double res4 = Math.exp(hmm.computeProbOfTransitionFromStateToState(graph,column,biased,fair));
+			
+			//for start state
+			double fairProb = hmm.probInStateAtPositionGivenSequence(graph,fair,count - 1,false);
+			double biasedProb = hmm.probInStateAtPositionGivenSequence(graph,biased,count - 1,false);
+			assertEquals(1.0, fairProb + biasedProb, 0.0001);
+			
+			//double fairProbCheck = column.getNode(fair).getBackward() * column.getNode(fair).getBackward(;
+			
+			assertEquals(fairProb, res1 + res2, 0.0001);
+			assertEquals(biasedProb, res3 + res4, 0.0001);
+			
+			assertEquals(1.0, res1 + res2 + res3 + res4, 0.0001);
+			count++;
+		}
+		assertTrue(count == seq.size());
 		
-		assertEquals(fairProb, res1 + res2, 0.0001);
-		assertEquals(biasedProb, res3 + res4, 0.0001);
+		//still has end state
+		assertTrue(iter.hasNext());
 		
-		assertEquals(1.0, res1 + res2 + res3 + res4, 0.0001);
-		
-		
-		
-		
+	}
+	
+	@Test
+	public void testComputeExpectedTransitionCountsFromStateToState() {
+		fail();
 	}
 
 }
