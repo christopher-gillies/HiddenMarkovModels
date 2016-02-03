@@ -44,6 +44,12 @@ public class HMM implements Validatable {
 		}
 	}
 	
+	public ViterbiGraph getViterbiGraph(List<Symbol> seq) {
+		TraversableOrderedSet<TraversableSymbol> emSeq = TraversableOrderedSetUtil.symbolListToTraverseable(seq);
+		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(this, emSeq);
+		return graph;
+		
+	}
 	
 	public static HMM createHMMFromStartState(State startState) {
 		if(!startState.isStartState()) {
@@ -151,7 +157,8 @@ public class HMM implements Validatable {
 	public enum LEARN_MODE {
 		PSEUDO_COUNT,
 		ZERO_COUNT,
-		CUSTOM
+		CUSTOM,
+		RANDOM,
 	}
 	
 	
@@ -199,6 +206,26 @@ public class HMM implements Validatable {
 				s.getEmissions().initalizeAllCountsTo0();
 			}
 			break;
+		case RANDOM:
+			if(!startState.isSilentState()) {
+				startState.getEmissions().initalizeAllRandom();
+			} 
+			
+			startState.getTransitions().initalizeAllRandom();
+			
+			if(!endState.isSilentState()) {
+				endState.getEmissions().initalizeAllRandom();
+			}
+			
+			if(endState.isConnectedEndState()) {
+				endState.getTransitions().initalizeAllRandom();
+			}
+			
+			for(State s : this.states.values()) {
+				s.getTransitions().initalizeAllRandom();
+				s.getEmissions().initalizeAllRandom();
+			}
+			break;
 		case CUSTOM:
 			//just use the count values as is
 			break;
@@ -237,15 +264,16 @@ public class HMM implements Validatable {
 		}
 	}
 	
-	public void learnEMSingle(List<Symbol> seq) {
+	public void learnEMSingle(List<Symbol> seq, LEARN_MODE mode) {
 		LinkedList<List<Symbol>> seqs = new LinkedList<List<Symbol>>();
 		seqs.add(seq);
-		learnEM(seqs);
+		learnEM(seqs,mode);
 	}
 	
-	public void learnEM(List<List<Symbol>> seqs) {
-		//initialize to pseudo counts and set initial probs
-		initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
+	public void learnEM(List<List<Symbol>> seqs, LEARN_MODE mode) {
+		
+		//initialize to random counts and set initial probs
+		initializeStateCounts(mode);
 		setStateProbsFromCounts();
 		
 		int numSeqs = seqs.size();
@@ -266,28 +294,39 @@ public class HMM implements Validatable {
 		
 		int maxIterations = 1000;
 		int currentIteration = 0;
-		double threshold = 0.000001;
-		double logLikelihoodPrevious = 0.0;
+		double threshold = 0.001;
+		double logLikelihoodPrevious = Math.log(Double.MIN_VALUE);
 		//forward variables will be calculated on the graphs for each sequence
 		double logLikelihoodCurrent = likelihood(seqs, true, graphsFromSeqs);
 		//check termination
-		while( Math.abs( logLikelihoodCurrent - logLikelihoodPrevious) < threshold 
+		//System.err.println("Current log likelihood: " + logLikelihoodCurrent);
+		//System.err.println("Current iteration: " + currentIteration);
+		while( Math.abs( logLikelihoodCurrent - logLikelihoodPrevious) > threshold 
 				&& currentIteration < maxIterations ) {
-			
+		//while( currentIteration < maxIterations ) {	
+			//System.err.println("Previous log likelihood: " + logLikelihoodPrevious);
+			//System.err.println("Current log likelihood: " + logLikelihoodCurrent);
+			//System.err.println("Current iteration: " + currentIteration);
 			//recurrence
+			
+			//set to initial counts
+			initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
+			
 			for(ViterbiGraph graph : graphs) {				
-				//set to initial counts
-				initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
 				
 				//forward is already calculated from likelihood call
 				calcBackward(graph);
-								
+				//System.err.println("Forward calculated: " + graph.forwardCalculated() );
+				//System.err.println("Backward calculated: " + graph.backwardCalculated() );	
+				//System.err.println("back eval: " + graph.getStartNode().getBackward() );
+				//System.err.println("fwd eval: " + graph.getEndNode().getForward() );
 			}
 			
 			//compute transition expectations
 			computeExpectedTransitionCounts(graphs);
 			
 			//compute emission expectations
+			computeExpectedEmissionCounts(graphs);
 			
 			//update probabilities
 			setStateProbsFromCounts();
@@ -296,11 +335,25 @@ public class HMM implements Validatable {
 			logLikelihoodPrevious = logLikelihoodCurrent;
 			//forward variables will be calculated on the graphs
 			logLikelihoodCurrent = likelihood(seqs, true, graphsFromSeqs);
+			currentIteration++;
 		}
+		
+		System.err.println("Final log likelihood: " + logLikelihoodCurrent);
+		System.err.println("Final iteration: " + currentIteration);
 	}
 	
 	void computeExpectedEmissionCounts(Collection<ViterbiGraph> graphs) {
+		if(!startState.isSilentState()) {
+			computeExpectedEmissionCountsForState(graphs,startState);
+		}
 		
+		if(!endState.isSilentState()) {
+			computeExpectedEmissionCountsForState(graphs,endState);
+		}
+		
+		for(State state : this.getStates()) {
+			computeExpectedEmissionCountsForState(graphs,state);		
+		}
 	}
 	
 	void computeExpectedEmissionCountsForState(Collection<ViterbiGraph> graphs, State state) {
@@ -324,8 +377,12 @@ public class HMM implements Validatable {
 			}
 		}
 		
-		//compute sum
-		
+		//compute sum for each symbol
+		for(Map.Entry<Symbol,List<Double>> entry : map.entrySet()) {
+			double sum = Math.exp(ViterbiNode.computeLogOfSumLogs(entry.getValue()));
+			state.getEmissions().addToCount(entry.getKey(), sum);
+			//System.err.println(state.toString() + " --- " + entry.getKey()  + " count " + state.getEmissions().getCount(entry.getKey() ));
+		}
 	}
 	
 	
@@ -341,6 +398,8 @@ public class HMM implements Validatable {
 		for(State state : this.states.values()) {
 			for(State transState : state.getTransitions().getKeys()) {
 				computeExpectedTransitionCountsFromStateToState(graphs,state,transState);
+				
+				//System.err.println(state.toString() + " --- " + transState.toString()  + " count " + state.getTransitions().getCount(transState));
 			}
 		}
 		

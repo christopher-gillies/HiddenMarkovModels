@@ -867,5 +867,93 @@ public class HMMTest {
 		//assertEquals(14.0,sum,0.0001);
 		assertEquals(14.0,sum,0.0001);
 	}
+	
+	
+	@Test
+	public void testComputeExpectedEmissionCounts() {
+		HMM hmm = createBiasedCoinHMM();
+		State start = hmm.getStartState();
+		State end = hmm.getEndState();
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+	
+		LinkedList<Symbol> seq = new LinkedList<Symbol>();
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+
+		ViterbiGraph graph = hmm.getViterbiGraph(seq);
+		
+		hmm.calcBackward(graph);
+		hmm.calcForward(graph);
+		
+		LinkedList<ViterbiGraph> graphs = new LinkedList<ViterbiGraph>();
+		graphs.add(graph);
+		
+		hmm.initializeStateCounts(LEARN_MODE.ZERO_COUNT);
+		
+		hmm.computeExpectedEmissionCounts(graphs);
+		
+		double sum = fair.getEmissions().getCount(heads) + fair.getEmissions().getCount(tails) +
+				biased.getEmissions().getCount(heads) + biased.getEmissions().getCount(tails);
+		
+		assertEquals(14,sum,0.00001);
+		
+	}
+	
+	
+	@Test
+	public void testLearnEM1() {
+		System.err.println("\ntestLearnEM1\n");
+		HMM hmm = createBiasedCoinHMM();
+		State start = hmm.getStartState();
+		State end = hmm.getEndState();
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+		TraversableOrderedSet<StateSymbolPair> pairs = hmm.generateSequence(1000);
+		List<Symbol> seq = StateSymbolPair.createListOfSymbolsFromStateSymbolPair(pairs);
+		
+		double before = hmm.evaluate(seq, true);
+		
+		hmm.learnEMSingle(seq,LEARN_MODE.RANDOM);
+		
+		
+		
+		System.err.println("After log liklihood: " + hmm.evaluate(seq, true));
+		System.err.println("Known log liklihood: " + before);
+		
+		System.err.println("fair to fair: " + fair.getTransitions().getProbability(fair));
+		System.err.println("fair to biased: " + fair.getTransitions().getProbability(biased));
+		
+		System.err.println("fair -- heads: " + fair.getEmissions().getProbability(heads));
+		System.err.println("fair -- tails: " + fair.getEmissions().getProbability(tails));
+		
+		System.err.println("biased to fair: " + biased.getTransitions().getProbability(fair));
+		System.err.println("biased to biased: " + biased.getTransitions().getProbability(biased));
+		
+		System.err.println("biased -- heads: " + biased.getEmissions().getProbability(heads));
+		System.err.println("biased -- tails: " + biased.getEmissions().getProbability(tails));
+		
+		fail();
+		
+		System.err.println("\ntestLearnEM1End\n");
+	}
 
 }

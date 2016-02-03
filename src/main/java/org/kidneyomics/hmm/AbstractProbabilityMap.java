@@ -104,6 +104,12 @@ abstract class AbstractProbabilityMap<T> implements Emitable<T>, Validatable, Pr
 		}
 	}
 	
+	public void initalizeAllRandom() {
+		for(T t : this.counts.keySet()) {
+			this.counts.put(t, randomNumberService.getNextRandomNumber());
+		}
+	}
+	
 	public void setProbsFromCounts() {
 		//compute maximum likelihood probs
 		//get sum
