@@ -299,6 +299,37 @@ public class HMM implements Validatable {
 		}
 	}
 	
+	void computeExpectedEmissionCounts(Collection<ViterbiGraph> graphs) {
+		
+	}
+	
+	void computeExpectedEmissionCountsForState(Collection<ViterbiGraph> graphs, State state) {
+		HashMap<Symbol,List<Double>> map = new HashMap<Symbol,List<Double>>();
+		
+		//initialize
+		for(Symbol symbol : state.getEmissions().getKeys()) {
+			map.put(symbol, new LinkedList<Double>());
+		}
+		
+		for(ViterbiGraph graph : graphs) {
+			for(ViterbiColumn column : graph.getColumns()) {
+				Symbol symbol = column.getSymbol();
+				ViterbiNode node = column.getNode(state);
+				if(node == null) {
+					continue;
+				} else {
+					double prob = probInStateAtPositionGivenSequence(graph,column,state,true);
+					map.get(symbol).add(prob);
+				}
+			}
+		}
+		
+		//compute sum
+		
+	}
+	
+	
+	
 	void computeExpectedTransitionCounts(Collection<ViterbiGraph> graphs) {
 		
 		//startState
@@ -309,7 +340,7 @@ public class HMM implements Validatable {
 		//interior states
 		for(State state : this.states.values()) {
 			for(State transState : state.getTransitions().getKeys()) {
-				computeExpectedTransitionCountsFromStateToState(graphs,startState,transState);
+				computeExpectedTransitionCountsFromStateToState(graphs,state,transState);
 			}
 		}
 		
@@ -328,6 +359,10 @@ public class HMM implements Validatable {
 			for(ViterbiColumn column : graph.getColumns()) {
 				//skip column if it does not contain state
 				if(!column.containsNode(state)) {
+					continue;
+				}
+				
+				if(!column.getNext().containsNode(transState)) {
 					continue;
 				}
 				
@@ -595,6 +630,11 @@ public class HMM implements Validatable {
 		
 		ViterbiColumn column = graph.getColumns().getAt(pos + 1);
 		assert(pos == column.getColumnNumber());
+		
+		return probInStateAtPositionGivenSequence(graph, column, state, log);
+	}
+	
+	double probInStateAtPositionGivenSequence(ViterbiGraph graph, ViterbiColumn column, State state, boolean log) {
 		ViterbiNode node = column.getNode(state);
 		double logBackward = node.getBackward();
 		double logForward = node.getForward();

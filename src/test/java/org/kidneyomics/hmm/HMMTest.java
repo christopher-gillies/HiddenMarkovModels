@@ -809,7 +809,63 @@ public class HMMTest {
 	
 	@Test
 	public void testComputeExpectedTransitionCountsFromStateToState() {
-		fail();
+		
+		HMM hmm = createBiasedCoinHMM();
+		State start = hmm.getStartState();
+		State end = hmm.getEndState();
+		Symbol heads = hmm.getSymbolByName("H");
+		Symbol tails = hmm.getSymbolByName("T");
+		State fair = hmm.getStateByName("F");
+		State biased = hmm.getStateByName("B");
+		
+	
+		LinkedList<Symbol> seq = new LinkedList<Symbol>();
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(heads);
+		seq.add(tails);
+		seq.add(heads);
+		seq.add(tails);
+		
+		TraversableOrderedSet<TraversableSymbol> emSeq = TraversableOrderedSetUtil.symbolListToTraverseable(seq);
+		ViterbiGraph graph = ViterbiGraph.createViterbiGraphFromHmmAndEmittedSymbols(hmm, emSeq);
+		
+		hmm.calcBackward(graph);
+		hmm.calcForward(graph);
+		
+		LinkedList<ViterbiGraph> graphs = new LinkedList<ViterbiGraph>();
+		graphs.add(graph);
+		
+		hmm.initializeStateCounts(LEARN_MODE.ZERO_COUNT);
+		
+		hmm.computeExpectedTransitionCounts(graphs);
+		double startToFair = start.getTransitions().getCount(fair);
+		double startToBiased = start.getTransitions().getCount(biased);
+		double fairToFair = fair.getTransitions().getCount(fair);
+		double fairToBiased = fair.getTransitions().getCount(biased);
+		double biasedToFair = biased.getTransitions().getCount(fair);
+		double biasedToBiased = biased.getTransitions().getCount(biased);
+		
+		double sum = startToFair + startToBiased + fairToFair + fairToBiased + biasedToFair + biasedToBiased;
+		
+		System.err.println("Start to fair: " + startToFair);
+		System.err.println("Start to biased: " + startToBiased);
+		System.err.println("Fair to fair: " + fairToFair);
+		System.err.println("Fair to biased: " + fairToBiased);
+		System.err.println("Biased to fair: " + biasedToFair);
+		System.err.println("Biased to biased: " + biasedToBiased);
+		System.err.println("Sum: " + sum);
+		
+		//assertEquals(14.0,sum,0.0001);
+		assertEquals(14.0,sum,0.0001);
 	}
 
 }
