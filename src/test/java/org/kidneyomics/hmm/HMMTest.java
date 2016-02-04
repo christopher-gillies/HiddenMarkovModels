@@ -938,16 +938,24 @@ public class HMMTest {
 		
 		hmm.initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
 		
+		//give a little bias to heads in biased state
 		biased.getEmissions().addToCount(heads, 1);
+		//give biased to stay in biased state
 		biased.getTransitions().addToCount(biased, 1);
+		//give biase to stay in fair state
 		fair.getTransitions().addToCount(fair, 1);
 		
+		hmm.setStateProbsFromCounts();
+		double startingLikelihood = hmm.evaluate(seq, true);
 		hmm.learnEMSingle(seq,LEARN_MODE.CUSTOM);
 		
 		
 		
-		System.err.println("After log liklihood: " + hmm.evaluate(seq, true));
-		System.err.println("Known log liklihood: " + before);
+		;
+		System.err.println("Known log likelihood: " + before);
+		System.err.println("Starting log likelihood: " + startingLikelihood);
+		System.err.println("After log likelihood: " + hmm.evaluate(seq, true));
+		
 		
 		System.err.println("fair to fair: " + fair.getTransitions().getProbability(fair));
 		System.err.println("fair to biased: " + fair.getTransitions().getProbability(biased));

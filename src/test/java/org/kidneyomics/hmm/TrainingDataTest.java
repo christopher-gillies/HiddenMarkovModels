@@ -4,6 +4,8 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -52,7 +54,12 @@ public class TrainingDataTest {
 	}
 	
 	//@Test
-	public void test() throws IOException {
+	/**
+	 * This method generates training data of different sizes and calculates the error in the training data for each size.
+	 * The error is calculated as the sum of the absolute differences from the true observations across all states transitions and emissions.
+	 * @throws IOException
+	 */
+	public void testTrainingDataSize() throws IOException {
 
 		
 		StringBuilder sb = new StringBuilder();
@@ -62,9 +69,6 @@ public class TrainingDataTest {
 		
 		System.err.println("File: " + out.getAbsolutePath());
 		for(int i = 50; i < 20000; i+=50) {
-			if(i > 2000) {
-				i+= 1000;
-			}
 			System.err.println(i);
 			HMM hmm = createBiasedCoinHMM();
 			Symbol heads = hmm.getSymbolByName("H");
@@ -100,8 +104,54 @@ public class TrainingDataTest {
 		
 		FileUtils.write(out, sb.toString());
 		
+	}
+	
+	@Test
+	/**
+	 * The purpose of this method is to generate a sequence of 2000 points and then generate different lengths of sub sequence
+	 * The goal will be to estimate the probability of the last state versus the true state
+	 */
+	public void testNumberofObservationsToAccuratelyGuessCurrentState() {
+		HMM hmm = createBiasedCoinHMM();
+		TraversableOrderedSet<StateSymbolPair> pairs = hmm.generateSequence(2000);
+		List<Symbol> seq = StateSymbolPair.createListOfSymbolsFromStateSymbolPair(pairs);
 		
-
+		for(int length = 1; length <= 100; length+=1) {
+			double totalError = 0.0;
+			int count = 0;
+			Iterator<StateSymbolPair> iter = pairs.iterator();
+			while(iter.hasNext()) {
+				StateSymbolPair next = iter.next();
+				
+				//build previous seq
+				StateSymbolPair current = next;
+				List<Symbol> syms = new LinkedList<Symbol>();
+				State lastState = null;
+				for(int i = 0; i < length; i++) {
+					if(current == null) {
+						break;
+					}
+					
+					if(i == length - 1) {
+						lastState = current.getState();
+					}
+					syms.add(current.getEmittedSymbol());
+					current = current.getNext();
+					
+				}
+				
+				if(syms.size() == length && lastState != null) {
+					count++;
+					double prob = hmm.probInStateAtPositionGivenSequence(lastState, syms.size() - 1, syms, false);
+					double error = 1 - prob;
+					totalError += error;
+				}
+				
+			}
+			double avgError = totalError / (double) count;
+			System.err.println(length + "\t" + avgError);
+		}
+		
 		
 		
 		
