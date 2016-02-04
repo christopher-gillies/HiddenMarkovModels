@@ -17,6 +17,10 @@ import org.kidneyomics.hmm.HMM.LEARN_MODE;
 
 public class HMMTest {
 
+	static {
+		State.randomService = new DefaultRandomNumberSerivce(0);
+	}
+	
 	public HMM createBiasedCoinHMM() {
 		Symbol heads = Symbol.createSymbol("H");
 		Symbol tails = Symbol.createSymbol("T");
@@ -927,12 +931,18 @@ public class HMMTest {
 		State fair = hmm.getStateByName("F");
 		State biased = hmm.getStateByName("B");
 		
-		TraversableOrderedSet<StateSymbolPair> pairs = hmm.generateSequence(1000);
+		TraversableOrderedSet<StateSymbolPair> pairs = hmm.generateSequence(2000);
 		List<Symbol> seq = StateSymbolPair.createListOfSymbolsFromStateSymbolPair(pairs);
 		
 		double before = hmm.evaluate(seq, true);
 		
-		hmm.learnEMSingle(seq,LEARN_MODE.RANDOM);
+		hmm.initializeStateCounts(LEARN_MODE.PSEUDO_COUNT);
+		
+		biased.getEmissions().addToCount(heads, 1);
+		biased.getTransitions().addToCount(biased, 1);
+		fair.getTransitions().addToCount(fair, 1);
+		
+		hmm.learnEMSingle(seq,LEARN_MODE.CUSTOM);
 		
 		
 		
@@ -951,8 +961,15 @@ public class HMMTest {
 		System.err.println("biased -- heads: " + biased.getEmissions().getProbability(heads));
 		System.err.println("biased -- tails: " + biased.getEmissions().getProbability(tails));
 		
-		fail();
+		assertEquals(0.9, fair.getTransitions().getProbability(fair), 0.1);
+		assertEquals(0.1, fair.getTransitions().getProbability(biased), 0.1);
+		assertEquals(0.5, fair.getEmissions().getProbability(heads), 0.1);
+		assertEquals(0.5, fair.getEmissions().getProbability(tails), 0.1);
 		
+		assertEquals(0.9, biased.getTransitions().getProbability(biased), 0.1);
+		assertEquals(0.1, biased.getTransitions().getProbability(fair), 0.1);
+		assertEquals(0.9, biased.getEmissions().getProbability(heads), 0.1);
+		assertEquals(0.1, biased.getEmissions().getProbability(tails), 0.1);
 		System.err.println("\ntestLearnEM1End\n");
 	}
 

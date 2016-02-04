@@ -2,7 +2,7 @@ package org.kidneyomics.hmm;
 
 public class State implements Validatable {
 	
-	private static RandomNumberService randomService = new DefaultRandomNumberSerivce();
+	static RandomNumberService randomService = new DefaultRandomNumberSerivce();
 	
 	private final Emissions emissions;
 	private final Transistions transitions;

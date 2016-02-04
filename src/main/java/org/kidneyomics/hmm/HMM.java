@@ -338,8 +338,8 @@ public class HMM implements Validatable {
 			currentIteration++;
 		}
 		
-		System.err.println("Final log likelihood: " + logLikelihoodCurrent);
-		System.err.println("Final iteration: " + currentIteration);
+		//System.err.println("Final log likelihood: " + logLikelihoodCurrent);
+		//System.err.println("Final iteration: " + currentIteration);
 	}
 	
 	void computeExpectedEmissionCounts(Collection<ViterbiGraph> graphs) {
