@@ -113,10 +113,10 @@ public class TrainingDataTest {
 	 */
 	public void testNumberofObservationsToAccuratelyGuessCurrentState() {
 		HMM hmm = createBiasedCoinHMM();
-		TraversableOrderedSet<StateSymbolPair> pairs = hmm.generateSequence(2000);
+		TraversableOrderedSet<StateSymbolPair> pairs = hmm.generateSequence(500);
 		List<Symbol> seq = StateSymbolPair.createListOfSymbolsFromStateSymbolPair(pairs);
 		
-		for(int length = 1; length <= 100; length+=1) {
+		for(int length = 1; length <= 50; length+=1) {
 			double totalError = 0.0;
 			int count = 0;
 			Iterator<StateSymbolPair> iter = pairs.iterator();
@@ -142,8 +142,20 @@ public class TrainingDataTest {
 				
 				if(syms.size() == length && lastState != null) {
 					count++;
-					double prob = hmm.probInStateAtPositionGivenSequence(lastState, syms.size() - 1, syms, false);
-					double error = 1 - prob;
+					double prob1 = hmm.probInStateAtPositionGivenSequence(lastState, syms.size() - 1, syms, false);
+					//double prob2 = hmm.probInStateAtPositionGivenSequence(lastState, syms.size() - 2, syms, false);
+					//double prob3 = hmm.probInStateAtPositionGivenSequence(lastState, syms.size() - 3, syms, false);
+					
+					double error = 1.0;
+					//if(prob1 >= 0.5 && prob2 >= 0.5 || prob3 >= 0.5 && prob2 >= 0.5) {
+					//	error = 0.0;
+					//}
+					
+					//if(prob1 >= 0.5) {
+						//error = 0.0;
+					//}
+					error = 1 - prob1;
+					
 					totalError += error;
 				}
 				
