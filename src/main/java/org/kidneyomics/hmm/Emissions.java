@@ -1,7 +1,7 @@
 package org.kidneyomics.hmm;
 
 
-class Emissions extends AbstractProbabilityMap<Symbol> {
+public class Emissions extends AbstractProbabilityMap<Symbol> {
 
 	Emissions() {
 		super();

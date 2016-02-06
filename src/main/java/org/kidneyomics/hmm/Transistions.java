@@ -1,7 +1,7 @@
 package org.kidneyomics.hmm;
 
 
-class Transistions extends AbstractProbabilityMap<State> {
+public class Transistions extends AbstractProbabilityMap<State> {
 	
 	Transistions() {
 		super();

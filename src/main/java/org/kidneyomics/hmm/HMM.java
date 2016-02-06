@@ -162,7 +162,7 @@ public class HMM implements Validatable {
 	}
 	
 	
-	void initializeStateCounts(LEARN_MODE mode) {
+	public void initializeStateCounts(LEARN_MODE mode) {
 		switch(mode) {
 		case PSEUDO_COUNT:
 			
